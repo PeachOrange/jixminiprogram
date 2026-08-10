@@ -5,6 +5,7 @@
   const roleSelect = document.getElementById('role-select');
   const levelSelect = document.getElementById('level-select');
   const statusSelect = document.getElementById('status-select');
+  const contentStateSelect = document.getElementById('content-state-select');
   const scenarioPanel = document.getElementById('scenario-controls');
   const scenarioToggle = document.getElementById('scenario-toggle');
   const modal = document.getElementById('upgrade-modal');
@@ -14,7 +15,7 @@
   const state = {
     role: 'owner', level: 4, status: '正常', page: 'mine', root: 'mine', history: [],
     timeScope: '本月', incomeFilter: '全部', orderFilter: '全部', teamFilter: '全部', materialTab: '发圈工具',
-    selectedContent: null,
+    selectedContent: null, registration: null, registrationResult: 'created', contentScenario: 'normal',
   };
 
   const conditions = [
@@ -81,6 +82,14 @@
     return `¥${Number(value).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
+  function escapeAttribute(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('"', '&quot;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
+  }
+
   function statusTone(status) {
     return ['冻结', '终止', '已退出'].includes(status) ? 'danger' : status === '正常' ? '' : 'warning';
   }
@@ -131,6 +140,9 @@
   }
 
   function renderOrdinaryStoreEntry() {
+    if (state.registration) {
+      return `<button class="store-entry-card mine-store-hero opening" type="button" data-page="register"><span class="store-entry-mark">店</span><span><small>开店登记</small><strong>查看开店登记</strong><em>已提交登记，可查看并更新运营联系资料</em></span><b>更新登记资料 →</b></button>`;
+    }
     return `<button class="store-entry-card mine-store-hero opening" type="button" data-page="register"><span class="store-entry-mark">店</span><span><small>回收店服务</small><strong>开通我的回收店</strong><em>登记成为回收店主，解锁经营、成长与分享能力</em></span><b>立即登记开店 →</b></button>`;
   }
 
@@ -154,20 +166,28 @@
   }
 
   function renderRegister() {
+    const registration = state.registration || {
+      realName: '陈先生', phone: '138****6815', wechat: '', city: '上海市', storeName: '',
+    };
+    const cityOptions = ['', '上海市', '杭州市', '南京市'].map((city) => {
+      const label = city || '请选择';
+      return `<option value="${city}" ${registration.city === city ? 'selected' : ''}>${label}</option>`;
+    }).join('');
     return `<section class="register-intro"><span class="section-label">最小登记</span><h2>开通我的回收店</h2><p>提交后由运营老师与你联系，不会提前创建店主身份或发放权益。</p></section>
       <form class="registration-form" id="registration-form">
-        <label><span>真实姓名</span><input name="realName" value="陈先生" required></label>
-        <label><span>手机号</span><div class="inline-input"><input name="phone" value="138****6815" readonly><button type="button" data-toast="手机号已经短信验证">已验证</button></div></label>
-        <label><span>微信号</span><input name="wechat" placeholder="用于运营老师联系" required></label>
-        <label><span>所在城市</span><select name="city" required><option value="">请选择</option><option selected>上海市</option><option>杭州市</option><option>南京市</option></select></label>
-        <label><span>店铺名称 <small>选填</small></span><input name="storeName" placeholder="未填写将生成“昵称＋回收店”"></label>
-        <label class="agreement"><input type="checkbox" name="agreement" required><span>我已阅读并同意《店主合作规则》</span></label>
-        <button class="submit-button" type="submit">提交登记</button>
+        <label><span>真实姓名</span><input name="realName" value="${escapeAttribute(registration.realName)}" required></label>
+        <label><span>手机号</span><div class="inline-input"><input name="phone" value="${escapeAttribute(registration.phone)}" readonly><button type="button" data-toast="手机号已经短信验证">已验证</button></div></label>
+        <label><span>微信号</span><input name="wechat" value="${escapeAttribute(registration.wechat)}" placeholder="用于运营老师联系" required></label>
+        <label><span>所在城市</span><select name="city" required>${cityOptions}</select></label>
+        <label><span>店铺名称 <small>选填</small></span><input name="storeName" value="${escapeAttribute(registration.storeName)}" placeholder="未填写将生成“昵称＋回收店”"></label>
+        <label class="agreement"><input type="checkbox" name="agreement" required ${state.registration ? 'checked' : ''}><span>我已阅读并同意《店主合作规则》</span></label>
+        <button class="submit-button" type="submit">${state.registration ? '更新登记资料' : '提交登记'}</button>
       </form><p class="form-footnote">不收集身份证照片、银行卡、粉丝数量、经营计划或邀请码。</p>`;
   }
 
   function renderRegisterSuccess() {
-    return `<section class="success-state"><span class="success-icon">✓</span><span class="section-label">登记已提交</span><h2>运营老师将尽快联系你</h2><p>登记不会展示审核进度。开通前，你仍保持普通用户身份。</p>
+    const updated = state.registrationResult === 'updated';
+    return `<section class="success-state"><span class="success-icon">✓</span><span class="section-label">${updated ? '资料更新成功' : '登记已提交'}</span><h2>${updated ? '登记资料已更新' : '运营老师将尽快联系你'}</h2><p>${updated ? '运营老师将使用最新资料与你联系。开通前，你仍保持普通用户身份。' : '登记不会展示审核进度。开通前，你仍保持普通用户身份。'}</p>
       <div class="qr-card"><div class="qr-code" aria-label="运营老师微信码">极X<br>运营</div><div><strong>运营老师微信码</strong><small>扫码添加运营老师，了解开店准备事项</small></div></div>
       <button class="primary-inline" type="button" data-toast="已保存运营老师微信码">保存微信码</button><button class="secondary-inline" type="button" data-page="mine">返回我的</button></section>`;
   }
@@ -179,7 +199,8 @@
     return `<section class="store-hero"><div class="store-title"><div><span class="verified-badge">平台认证店主</span><h2>陈先生回收店</h2><p>${model.getIdentityView(state).identity}·LV${state.level} · ${state.status} · 数据更新于10:20</p></div><button type="button" data-page="share">分享店铺</button></div>
       <div class="scope-tabs">${['本月', '上月', '累计'].map((tab) => `<button type="button" class="${state.timeScope === tab ? 'active' : ''}" data-time-scope="${tab}">${tab}</button>`).join('')}</div>
       <div class="store-income"><span>${state.timeScope}已结算店铺收益</span><strong>${money(wallet.monthStoreIncome * scopeFactor)}</strong><small>实际结算数据，不含回收收入</small></div></section>
-      <section class="metric-grid store-metrics"><article><span>待结算业务收益</span><strong>${money(wallet.pendingBusiness)}</strong></article><article><span>待解锁拉新收益</span><strong>${money(wallet.lockedAcquisition)}</strong></article><article><span>有效订单</span><strong>${Math.round(14 * scopeFactor)}笔</strong></article><article><span>新增绑定客户</span><strong>${Math.round(8 * scopeFactor)}人</strong></article><article><span>团队有效订单</span><strong>${Math.round(9 * scopeFactor)}笔</strong></article><article><span>可见团队范围</span><strong>${model.getTeamVisibility(state.level).depth}级</strong></article></section>
+      <section class="metric-grid store-metrics"><article><span>待结算业务收益<small class="current-metric-badge">当前</small></span><strong>${money(wallet.pendingBusiness)}</strong></article><article><span>待解锁拉新收益<small class="current-metric-badge">当前</small></span><strong>${money(wallet.lockedAcquisition)}</strong></article><article><span>有效订单</span><strong>${Math.round(14 * scopeFactor)}笔</strong></article><article><span>新增绑定客户</span><strong>${Math.round(8 * scopeFactor)}人</strong></article><article><span>团队有效订单</span><strong>${Math.round(9 * scopeFactor)}笔</strong></article><article><span>可见团队范围<small class="current-metric-badge">当前</small></span><strong>${model.getTeamVisibility(state.level).depth}级</strong></article></section>
+      <p class="metric-scope-note">时间筛选仅影响已结算收益、有效订单、新增客户和团队有效订单；标记“当前”的指标不随时间切换。</p>
       <button class="order-summary-card" type="button" data-page="team-orders"><span><small>团队进行中订单</small><strong>${summary.total} 笔</strong></span><div>${['待取件', '待收货', '待质检', '待确认'].map((key) => `<em>${key}<b>${summary[key]}</b></em>`).join('')}</div><i>查看全部 →</i></button>
       <section class="section-card"><div class="section-card-head"><h3>经营工具</h3></div><div class="agent-grid store-tools"><button type="button" data-page="team"><i>团</i><span>客户与团队</span></button><button type="button" data-page="growth"><i>级</i><span>成长与权益</span></button><button type="button" data-page="wallet"><i>收</i><span>收益明细</span></button><button type="button" data-page="share"><i>享</i><span>分享店铺</span></button><button type="button" data-page="training"><i>材</i><span>专属素材</span></button><button type="button" data-page="rules"><i>规</i><span>规则说明</span></button></div></section>
       <button class="store-advisor-entry" type="button" data-page="advisor"><span class="advisor-avatar">顾</span><span><small>专属运营服务</small><strong>陈老师 · 店主运营顾问</strong><em>开店、经营与等级问题都可以联系我</em></span><b>查看微信码 →</b></button>`;
@@ -247,7 +268,21 @@
     return `<section class="landing-store"><span class="verified-badge">平台认证回收店</span><h2>陈先生回收店</h2><p>专业服务由平台提供，店主为你分享可信赖的闲置回收入口。</p><div class="category-row"><span>旧衣鞋包</span><span>手机数码</span><span>图书</span></div><div class="guarantee-list"><p><i>✓</i> 免费上门取件</p><p><i>✓</i> 平台统一质检</p><p><i>✓</i> 价格确认后结算</p></div><button type="button" data-root="home">发起回收</button><small>进入回收流程后不持续展示推荐店铺或归属关系</small></section>`;
   }
 
+  function renderContentFallback(kind) {
+    const fallback = model.getContentFallback(kind);
+    if (!fallback) return '';
+    const action = fallback.action === 'retry'
+      ? 'data-content-retry'
+      : fallback.action === 'training'
+        ? 'data-go-back'
+        : 'data-page="store"';
+    return `<section class="content-fallback ${kind}"><span aria-hidden="true">!</span><h2>${fallback.title}</h2><p>${fallback.description}</p><button type="button" ${action}>${fallback.actionLabel}</button></section>`;
+  }
+
   function renderTraining() {
+    if (['empty', 'load-error', 'network-error'].includes(state.contentScenario)) {
+      return renderContentFallback(state.contentScenario);
+    }
     const momentCards = trainingContent.发圈工具.map((item, index) => `<article class="moment-card"><button class="moment-visual ${item.tone}" type="button" data-content-index="${index}"><span>${item.category}</span><i>图文 · ${item.meta.includes('3张') ? '3张配图' : '2张配图'}</i></button><div class="moment-copy"><span>发圈图文</span><h3>${item.title}</h3><p>朋友圈文案与配图已组合，可直接复制并保存配图。</p><div><button type="button" data-toast="文案已复制">复制文案</button><button type="button" data-toast="配图已保存">保存配图</button></div></div></article>`).join('');
     const videoCards = trainingContent.视频素材.map((item, index) => `<article class="video-card"><button class="video-preview ${item.tone}" type="button" data-content-index="${index}"><span>${item.category}</span><i class="video-play">▶</i><b class="video-duration">${item.meta.split(' · ')[0]}</b></button><div class="video-info"><span>${item.meta.split(' · ')[1]}</span><h3>${item.title}</h3><div><button type="button" data-content-index="${index}">播放视频</button><button type="button" data-toast="视频素材已保存">保存视频</button></div></div></article>`).join('');
     const learningCards = trainingContent.学习资料.map((item, index) => `<article class="learning-card ${item.locked ? 'locked' : ''}"><button class="learning-thumb ${item.tone}" type="button" data-content-index="${index}"><span>图文资料</span><b>${item.locked ? '锁' : '读'}</b></button><div class="learning-info"><span>${item.category}</span><h3>${item.title}</h3><p class="learning-summary">${item.locked ? '学习常见鞋服成色、瑕疵和可回收判断方法。' : '从开店准备、客户沟通到订单跟进，快速了解经营流程。'}</p><small>${item.meta}</small><button type="button" data-content-index="${index}">${item.action}</button></div></article>`).join('');
@@ -258,6 +293,7 @@
   }
 
   function renderContent() {
+    if (state.contentScenario === 'unavailable') return renderContentFallback('unavailable');
     const item = state.selectedContent || trainingContent.学习资料[0];
     if (item.locked) return `<section class="locked-content"><span class="lock-symbol">锁</span><h2>${item.title}</h2><p>该内容需要轻享店主·LV5解锁。当前等级 LV${state.level}，还差 11 位团队店主。</p><button type="button" data-page="growth">查看解锁条件</button></section>`;
     return `<section class="content-detail"><span class="section-label">${item.category}</span><h2>${item.title}</h2><p>${item.meta}</p><div class="content-media">${state.materialTab === '视频素材' ? '<span class="play-button">▶</span><small>视频播放演示</small>' : '<strong>店主经营内容示例</strong><p>围绕真实回收场景，向客户说明可回收品类、服务流程与平台保障。内容不承诺预测收益，也不披露客户隐私。</p>'}</div><button type="button" data-toast="内容操作已完成">${item.action}</button></section>`;
@@ -409,6 +445,11 @@
     if (teamButton) { state.teamFilter = teamButton.dataset.teamFilter; render(); }
     const materialButton = event.target.closest('[data-material-tab]');
     if (materialButton) { state.materialTab = materialButton.dataset.materialTab; render(); }
+    if (event.target.closest('[data-content-retry]')) {
+      state.contentScenario = 'normal';
+      contentStateSelect.value = 'normal';
+      render();
+    }
     const contentButton = event.target.closest('[data-content-index]');
     if (contentButton) { state.selectedContent = trainingContent[state.materialTab][Number(contentButton.dataset.contentIndex)]; goTo('content'); }
     const benefitHelpButton = event.target.closest('[data-benefit-help]');
@@ -425,12 +466,17 @@
     if (event.target.id !== 'registration-form') return;
     event.preventDefault();
     if (!event.target.reportValidity()) return;
+    const formData = new FormData(event.target);
+    const result = model.upsertRegistration(state.registration, Object.fromEntries(formData.entries()));
+    state.registration = result.record;
+    state.registrationResult = result.updated ? 'updated' : 'created';
     goTo('register-success');
   });
 
   roleSelect.addEventListener('change', () => { state.role = roleSelect.value; levelSelect.disabled = state.role !== 'owner'; state.page = 'mine'; state.history = []; render(); });
   levelSelect.addEventListener('change', () => { state.level = Number(levelSelect.value); state.teamFilter = '全部'; render(); });
   statusSelect.addEventListener('change', () => { state.status = statusSelect.value; render(); });
+  contentStateSelect.addEventListener('change', () => { state.contentScenario = contentStateSelect.value; render(); });
   scenarioToggle.addEventListener('click', () => { const open = scenarioPanel.classList.toggle('open'); scenarioToggle.setAttribute('aria-expanded', String(open)); });
   upgradeButton.addEventListener('click', renderUpgradeModal);
   document.querySelectorAll('[data-scenario]').forEach((button) => button.addEventListener('click', () => {

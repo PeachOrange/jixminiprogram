@@ -64,6 +64,13 @@
     专属顾问支持: '在我的回收店进入专属运营服务并联系顾问。',
   };
 
+  const contentFallbacks = {
+    empty: { title: '暂无可用内容', description: '当前分类暂时没有可展示的素材。', action: 'store', actionLabel: '返回我的回收店' },
+    'load-error': { title: '内容加载失败', description: '内容暂时无法加载，请稍后重试。', action: 'retry', actionLabel: '重新加载' },
+    'network-error': { title: '网络连接异常', description: '请检查网络连接后重新尝试。', action: 'retry', actionLabel: '重新连接' },
+    unavailable: { title: '内容已下架', description: '该内容暂不可查看，请返回素材列表选择其他内容。', action: 'training', actionLabel: '返回素材列表' },
+  };
+
   function getIdentityView(state) {
     if (state.role !== 'owner') return { identity: '普通用户', level: 1, showStoreArea: false };
     const level = Math.max(2, Math.min(12, Number(state.level) || 2));
@@ -194,11 +201,28 @@
     };
   }
 
+  function getContentFallback(kind) {
+    return contentFallbacks[kind] ? { ...contentFallbacks[kind] } : null;
+  }
+
+  function upsertRegistration(existing, input) {
+    const record = {
+      ...(existing || {}),
+      realName: String(input.realName || '').trim(),
+      phone: String(input.phone || '').trim(),
+      wechat: String(input.wechat || '').trim(),
+      city: String(input.city || '').trim(),
+      storeName: String(input.storeName || '').trim(),
+    };
+    return { record, updated: Boolean(existing) };
+  }
+
   root.MiniProgramModel = {
     calculateProgress,
     filterIncome,
     filterTeamMembers,
     getBenefitUsage,
+    getContentFallback,
     getIdentityView,
     getLevelCards,
     getLevelRoadmap,
@@ -209,5 +233,6 @@
     getUpgradeFeedback,
     getWalletSummary,
     summarizeOrders,
+    upsertRegistration,
   };
 })(globalThis);

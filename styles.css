@@ -499,6 +499,8 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .metric-grid span, .metric-grid strong { display: block; }
 .metric-grid span { min-height: 21px; color: var(--muted); font-size: 7px; line-height: 1.4; }
 .metric-grid strong { margin-top: 3px; font-size: 10px; }
+.current-metric-badge { display: inline-flex; margin-left: 3px; padding: 1px 4px; border-radius: 999px; color: var(--teal); background: var(--mint); font-size: 6px; line-height: 1.4; vertical-align: 1px; }
+.metric-scope-note { margin: -2px 2px 12px; color: var(--muted); font-size: 7px; line-height: 1.6; }
 .order-summary-card { display: grid; width: 100%; gap: 9px; margin: 9px 0; padding: 13px; border: 0; border-radius: 17px; color: #fff; background: var(--navy); cursor: pointer; text-align: left; }
 .order-summary-card > span { display: flex; justify-content: space-between; align-items: center; }
 .order-summary-card small { color: #b9ccc6; font-size: 8px; }
@@ -628,6 +630,12 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .advisor-page .qr-code { width: 178px; height: 178px; margin-bottom: 12px; border-width: 10px; font-size: 15px; }
 .advisor-page .qr-card small { max-width: 210px; }
 .advisor-page > button { width: 100%; min-height: 40px; border: 0; border-radius: 11px; color: var(--navy); background: var(--lime); cursor: pointer; font-size: 9px; font-weight: 800; }
+.content-fallback { display: grid; min-height: 430px; padding: 30px 22px; place-items: center; align-content: center; border: 1px solid var(--line); border-radius: 20px; background: #fff; text-align: center; }
+.content-fallback > span { display: grid; width: 58px; height: 58px; place-items: center; border-radius: 50%; color: var(--teal); background: var(--mint); font-size: 20px; font-weight: 800; }
+.content-fallback h2 { margin: 14px 0 5px; font-family: var(--font-title); font-size: 21px; }
+.content-fallback p { max-width: 250px; margin: 0; color: var(--muted); font-size: 9px; line-height: 1.7; }
+.content-fallback button { min-width: 130px; margin-top: 18px; padding: 10px 14px; border: 0; border-radius: 11px; color: #fff; background: var(--teal); cursor: pointer; font-size: 9px; font-weight: 800; }
+.content-fallback.unavailable > span { color: #885117; background: #fff0d5; }
 .locked-content, .content-detail, .status-page, .advisor-card { padding: 22px; border: 1px solid var(--line); border-radius: 20px; background: #fff; text-align: center; }
 .lock-symbol { display: grid; width: 58px; height: 58px; margin: 0 auto 15px; place-items: center; border-radius: 50%; color: #885117; background: #fff0d5; font-size: 12px; font-weight: 800; }
 .locked-content h2, .content-detail h2, .status-page h2, .advisor-card h2 { margin: 7px 0; font-family: var(--font-title); font-size: 21px; }

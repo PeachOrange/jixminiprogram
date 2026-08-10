@@ -158,6 +158,34 @@ test('普通等级自动升级而LV12达标只引导线下沟通', () => {
   assert.equal(partner.autoUpgrade, false);
 });
 
+test('小程序登记首次创建并在重复提交时更新同一记录', () => {
+  const model = miniModel();
+  assert.equal(typeof model.upsertRegistration, 'function');
+  const first = model.upsertRegistration(null, {
+    realName: '陈先生', phone: '138****6815', wechat: 'chen-one', city: '上海市', storeName: '',
+  });
+  const second = model.upsertRegistration(first.record, {
+    realName: '陈先生', phone: '138****6815', wechat: 'chen-two', city: '杭州市', storeName: '陈先生回收店',
+  });
+  assert.equal(first.updated, false);
+  assert.equal(second.updated, true);
+  assert.equal(second.record.wechat, 'chen-two');
+  assert.equal(second.record.city, '杭州市');
+  assert.equal(second.record.storeName, '陈先生回收店');
+});
+
+test('小程序登记页回显已有记录并区分资料更新结果', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const register = sourceSection(source, 'function renderRegister()', 'function renderRegisterSuccess()');
+  const submit = sourceSection(source, "document.addEventListener('submit'", "roleSelect.addEventListener('change'");
+  for (const marker of ['state.registration', '查看开店登记', '更新登记资料', '登记资料已更新']) {
+    assert.ok(source.includes(marker), `登记重入缺少：${marker}`);
+  }
+  assert.ok(register.includes('state.registration'));
+  assert.ok(submit.includes('new FormData(event.target)'));
+  assert.ok(submit.includes('model.upsertRegistration'));
+});
+
 test('小程序覆盖登记、我的回收店、统一钱包和分享页面', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   for (const marker of ['开通我的回收店', '真实姓名', '运营老师微信码', '我的回收店', '可提现余额', '团队进行中订单', '店铺专属海报', '分享落地页']) {
@@ -215,6 +243,37 @@ test('小程序培训素材覆盖三类内容和等级锁定', () => {
   }
 });
 
+test('内容负向状态提供明确文案和重试或返回动作', () => {
+  const model = miniModel();
+  assert.equal(typeof model.getContentFallback, 'function');
+  assert.deepEqual(JSON.parse(JSON.stringify(model.getContentFallback('empty'))), {
+    title: '暂无可用内容', description: '当前分类暂时没有可展示的素材。', action: 'store', actionLabel: '返回我的回收店',
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(model.getContentFallback('load-error'))), {
+    title: '内容加载失败', description: '内容暂时无法加载，请稍后重试。', action: 'retry', actionLabel: '重新加载',
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(model.getContentFallback('network-error'))), {
+    title: '网络连接异常', description: '请检查网络连接后重新尝试。', action: 'retry', actionLabel: '重新连接',
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(model.getContentFallback('unavailable'))), {
+    title: '内容已下架', description: '该内容暂不可查看，请返回素材列表选择其他内容。', action: 'training', actionLabel: '返回素材列表',
+  });
+  assert.equal(model.getContentFallback('normal'), null);
+});
+
+test('原型控制台可切换内容负向状态并提供重试返回路径', () => {
+  const html = readFileSync(`${root}/index.html`, 'utf8');
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  for (const marker of ['id="content-state-select"', 'value="empty"', 'value="load-error"', 'value="network-error"', 'value="unavailable"']) {
+    assert.ok(html.includes(marker), `内容情景控制缺少：${marker}`);
+  }
+  for (const marker of ['contentScenario', 'renderContentFallback', 'data-content-retry', "state.contentScenario = 'normal'"]) {
+    assert.ok(source.includes(marker), `内容负向状态接线缺少：${marker}`);
+  }
+  assert.ok(styles.includes('.content-fallback'));
+});
+
 test('店主我的页只保留我的回收店入口', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const mine = sourceSection(source, 'function renderMine()', 'function renderRegister()');
@@ -229,6 +288,18 @@ test('我的回收店区分分享店铺与专属素材并提供客服入口', ()
   assert.match(store, /data-page="training"[^>]*>[\s\S]*?专属素材/);
   assert.ok(store.includes('data-page="advisor"'));
   assert.ok(store.includes('查看微信码'));
+});
+
+test('回收店明确区分时间指标和当前状态指标', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const store = sourceSection(source, 'function renderStore()', 'function renderGrowth()');
+  for (const marker of ['current-metric-badge', 'metric-scope-note', '不随时间切换']) {
+    assert.ok(store.includes(marker), `回收店口径缺少：${marker}`);
+  }
+  assert.equal((store.match(/current-metric-badge/g) || []).length, 3);
+  assert.ok(styles.includes('.current-metric-badge'));
+  assert.ok(styles.includes('.metric-scope-note'));
 });
 
 test('成长权益展示真实指标进度与横向权益卡片', () => {

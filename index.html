@@ -64,6 +64,16 @@
             <option>正常</option><option>预警</option><option>休眠</option><option>限权</option><option>冻结</option><option>终止</option><option>已退出</option>
           </select>
         </div>
+        <div class="control-group">
+          <label for="content-state-select">内容状态</label>
+          <select id="content-state-select">
+            <option value="normal" selected>正常</option>
+            <option value="empty">空列表</option>
+            <option value="load-error">加载失败</option>
+            <option value="network-error">网络异常</option>
+            <option value="unavailable">内容已下架</option>
+          </select>
+        </div>
 
         <div class="quick-scenarios">
           <span>快捷情景</span>
