@@ -88,12 +88,24 @@ test('LV5和LV6升级弹窗使用后台已发布的三项门槛', () => {
   assert.equal(typeof model.getUpgradeConditions, 'function');
   const level5 = JSON.parse(JSON.stringify(model.getUpgradeConditions(5)));
   const level6 = JSON.parse(JSON.stringify(model.getUpgradeConditions(6)));
-  assert.deepEqual(level5.conditions.map((item) => [item.name, item.target]), [
-    ['有效成交客户', 20], ['团队有效订单', 20], ['累计已结算店铺收益', 10000],
+  assert.deepEqual(level5.conditions.map((item) => [item.name, item.target, item.unit]), [
+    ['店铺客户', 20, '人'], ['店铺收益', 10000, '元'], ['团队店主', 20, '人'],
   ]);
-  assert.deepEqual(level6.conditions.map((item) => [item.name, item.target]), [
-    ['有效成交客户', 30], ['团队有效订单', 35], ['累计已结算店铺收益', 18000],
+  assert.deepEqual(level6.conditions.map((item) => [item.name, item.target, item.unit]), [
+    ['店铺客户', 30, '人'], ['店铺收益', 18000, '元'], ['团队店主', 35, '人'],
   ]);
+  assert.equal(level5.conditions[1].money, true);
+});
+
+test('小程序升级指标统一使用店铺客户店铺收益和团队店主', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const conditions = sourceSection(source, 'const conditions = [', 'const incomeRows = [');
+  for (const marker of ['店铺客户', '店铺收益', '团队店主']) {
+    assert.ok(conditions.includes(marker), `小程序升级指标缺少：${marker}`);
+  }
+  for (const marker of ['有效成交客户', '团队有效订单', '累计已结算店铺收益']) {
+    assert.equal(conditions.includes(marker), false, `小程序升级指标仍保留旧口径：${marker}`);
+  }
 });
 
 test('当前等级的每项权益都有使用说明', () => {
@@ -170,6 +182,32 @@ test('店主首屏先展示我的回收店入口再展示收益摘要', () => {
   assert.ok(mine.indexOf('store-entry-card') < mine.indexOf('renderWalletPreview()'));
 });
 
+test('店主我的页依次展示回收店、首页三板块、经营收益、我的钱包和常用功能', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const mine = sourceSection(source, 'function renderMine()', 'function renderRegister()');
+  const servicePanels = sourceSection(source, 'function renderMineServicePanels()', 'function renderMineWallet()');
+  const wallet = sourceSection(source, 'function renderMineWallet()', 'function renderCommonFeatures()');
+  const common = sourceSection(source, 'function renderCommonFeatures()', 'function renderOrdinaryStoreEntry()');
+  for (const marker of ['我的评估', '我的订单', '评估师']) assert.ok(servicePanels.includes(marker), `缺少首页同款板块：${marker}`);
+  assert.ok(wallet.includes('我的钱包'));
+  assert.ok(common.includes('常用功能'));
+  const ordered = ['store-entry-card', 'renderMineServicePanels()', 'renderWalletPreview()', 'renderMineWallet()', 'renderCommonFeatures()'];
+  ordered.reduce((previous, marker) => {
+    const current = mine.indexOf(marker);
+    assert.ok(current > previous, `我的页模块顺序错误：${marker}`);
+    return current;
+  }, -1);
+});
+
+test('普通用户使用开店入口且不展示经营收益', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const entry = sourceSection(source, 'function renderOrdinaryStoreEntry()', 'function renderWalletPreview()');
+  for (const marker of ['开通我的回收店', 'data-page="register"']) assert.ok(entry.includes(marker), `普通用户开店入口缺少：${marker}`);
+  assert.equal(source.includes('function renderOrdinaryEarnings()'), false, '普通用户不应保留经营收益组件');
+  const mine = sourceSection(source, 'function renderMine()', 'function renderRegister()');
+  assert.equal(mine.includes('renderOrdinaryEarnings()'), false, '普通用户不应渲染经营收益');
+});
+
 test('小程序培训素材覆盖三类内容和等级锁定', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   for (const marker of ['发圈工具', '视频素材', '学习资料', '复制文案', '保存素材', '查看解锁条件']) {
@@ -217,13 +255,34 @@ test('成长权益按钮打开权益说明和下两级升级条件弹窗', () =>
   }
 });
 
-test('成长权益轮播末尾提供完整锁定尾卡和全部等级路线弹窗', () => {
+test('全部等级卡片的操作按钮固定在卡片底部', () => {
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  assert.match(styles, /\.benefit-card\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/, '等级卡片需要使用纵向弹性布局');
+  assert.match(styles, /\.benefit-card\s*>\s*button\s*\{[^}]*margin-top:\s*auto;/, '等级卡片按钮需要自动占据上方剩余空间');
+});
+
+test('等级权益指示点随卡片滚动更新并支持点击定位', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const styles = readFileSync(`${root}/styles.css`, 'utf8');
   const growth = sourceSection(source, 'function renderGrowth()', 'function renderWallet()');
-  for (const marker of ['more-benefits-card', '升级解锁更多权益', 'data-level-roadmap', 'class="locked"']) {
+  const binding = sourceSection(source, 'function bindLevelCarouselIndicators()', 'function render()');
+  for (const marker of ['data-level-card', 'data-level-dot']) assert.ok(growth.includes(marker), `等级轮播缺少索引：${marker}`);
+  for (const marker of ["addEventListener('scroll'", "classList.toggle('active'", 'requestAnimationFrame', 'scrollIntoView']) {
+    assert.ok(binding.includes(marker), `等级轮播联动缺少：${marker}`);
+  }
+  assert.ok(source.includes('bindLevelCarouselIndicators();'), '页面渲染后没有绑定等级轮播联动');
+  assert.ok(styles.includes('.level-dots button.locked.active'), '锁定指示点缺少激活样式');
+});
+
+test('成长权益轮播末尾保留锁定尾卡但不展示全部等级按钮', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const growth = sourceSection(source, 'function renderGrowth()', 'function renderWallet()');
+  for (const marker of ['more-benefits-card', '升级解锁更多权益', 'class="locked"']) {
     assert.ok(growth.includes(marker), `成长权益尾卡缺少：${marker}`);
   }
+  assert.equal(growth.includes('查看全部等级权益'), false, '锁定尾卡不应展示查看全部等级权益按钮');
+  assert.equal(growth.includes('data-level-roadmap'), false, '锁定尾卡不应保留全部等级按钮事件');
   for (const marker of ['function renderLevelRoadmapModal', 'level-roadmap-list']) {
     assert.ok(source.includes(marker), `缺少等级路线弹窗：${marker}`);
   }
@@ -235,9 +294,32 @@ test('成长权益轮播末尾提供完整锁定尾卡和全部等级路线弹�
 test('客户与团队恢复升级贡献、三栏概览和脱敏成员行', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const team = sourceSection(source, 'function renderTeam()', 'function renderShare()');
-  for (const marker of ['team-contribution', '团队有效订单', 'team-overview', 'team-tabs', 'person-row', 'person-button']) {
+  for (const marker of ['team-contribution', '团队店主', 'team-overview', 'team-tabs', 'person-row', 'person-button']) {
     assert.ok(team.includes(marker), `客户与团队缺少结构：${marker}`);
   }
+});
+
+test('LV11和LV12团队概览增加团队数量数据块', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const team = sourceSection(source, 'function renderTeam()', 'function renderShare()');
+  for (const marker of ['visibility.depth === 2', '团队数量', 'team-overview extended']) {
+    assert.ok(team.includes(marker), `高等级团队概览缺少：${marker}`);
+  }
+  assert.ok(styles.includes('.team-overview.extended'), '缺少四栏团队概览样式');
+});
+
+test('LV11和LV12提供团队数据筛选并复用成员列表', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const team = sourceSection(source, 'function renderTeam()', 'function renderShare()');
+  for (const marker of ['二级店主', '团队数据', "state.teamFilter === '团队数据'", 'person-row', 'person-button']) {
+    assert.ok(team.includes(marker), `高等级团队数据缺少：${marker}`);
+  }
+  assert.ok(source.includes('const teamDataMembers = ['), '缺少团队成员示例数据');
+  assert.ok(!team.includes('team-order-list'), '团队数据不应使用订单列表结构');
+  assert.ok(!source.includes('const teamOrderRows = ['), '不应保留团队订单示例数据');
+  assert.ok(!styles.includes('.team-order-card'), '不应保留团队订单卡片样式');
 });
 
 test('专属素材为发圈、视频和学习资料使用不同展示结构', () => {

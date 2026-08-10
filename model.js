@@ -33,15 +33,15 @@
 
   const levelUpgradeRules = {
     2: { targets: [3, 0, 0], relation: 'all', upgradeMode: 'automatic' },
-    3: { targets: [5, 6, 2000], relation: 'all', upgradeMode: 'automatic' },
-    4: { targets: [12, 12, 5000], relation: 'all', upgradeMode: 'automatic' },
-    5: { targets: [20, 20, 10000], relation: 'all', upgradeMode: 'automatic' },
-    6: { targets: [30, 35, 18000], relation: 'all', upgradeMode: 'automatic' },
-    7: { targets: [40, 55, 28000], relation: 'all', upgradeMode: 'automatic' },
-    8: { targets: [50, 80, 40000], relation: 'all', upgradeMode: 'automatic' },
-    9: { targets: [65, 120, 65000], relation: 'all', upgradeMode: 'automatic' },
-    10: { targets: [90, 180, 100000], relation: 'all', upgradeMode: 'automatic' },
-    11: { targets: [120, 260, 160000], relation: 'all', upgradeMode: 'automatic' },
+    3: { targets: [5, 2000, 6], relation: 'all', upgradeMode: 'automatic' },
+    4: { targets: [12, 5000, 12], relation: 'all', upgradeMode: 'automatic' },
+    5: { targets: [20, 10000, 20], relation: 'all', upgradeMode: 'automatic' },
+    6: { targets: [30, 18000, 35], relation: 'all', upgradeMode: 'automatic' },
+    7: { targets: [40, 28000, 55], relation: 'all', upgradeMode: 'automatic' },
+    8: { targets: [50, 40000, 80], relation: 'all', upgradeMode: 'automatic' },
+    9: { targets: [65, 65000, 120], relation: 'all', upgradeMode: 'automatic' },
+    10: { targets: [90, 100000, 180], relation: 'all', upgradeMode: 'automatic' },
+    11: { targets: [120, 160000, 260], relation: 'all', upgradeMode: 'automatic' },
     12: { targets: [0, 0, 0], relation: 'offline', upgradeMode: 'contact' },
   };
 
@@ -131,7 +131,7 @@
   function getUpgradeConditions(level) {
     const normalized = Math.max(2, Math.min(12, Number(level) || 2));
     const rule = levelUpgradeRules[normalized];
-    const conditionNames = ['有效成交客户', '团队有效订单', '累计已结算店铺收益'];
+    const conditionNames = ['店铺客户', '店铺收益', '团队店主'];
     return {
       level: normalized,
       relation: rule.relation,
@@ -139,8 +139,8 @@
       conditions: conditionNames.map((name, index) => ({
         name,
         target: rule.targets[index],
-        unit: index === 0 ? '人' : index === 1 ? '笔' : '元',
-        money: index === 2,
+        unit: index === 1 ? '元' : '人',
+        money: index === 1,
       })).filter((item) => item.target > 0),
     };
   }

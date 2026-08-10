@@ -189,9 +189,10 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .level-dots button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 50%; background: #cbd4cf; cursor: pointer; }
 .level-dots button.active { width: 18px; border-radius: 999px; background: var(--teal); }
 .level-dots button.locked { border: 1px solid var(--teal); background: transparent; }
+.level-dots button.locked.active { background: var(--teal); }
 .level-carousel { display: flex; gap: 10px; margin: 0 -14px; padding: 0 14px 12px; overflow-x: auto; scroll-padding-inline: 14px; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .level-carousel::-webkit-scrollbar { display: none; }
-.benefit-card { width: calc(100% - 35px); min-width: calc(100% - 35px); padding: 17px; border: 1px solid #dfe6e1; border-radius: 20px; background: #fff; box-shadow: 0 10px 24px rgba(20,36,42,.08); scroll-snap-align: center; }
+.benefit-card { display: flex; width: calc(100% - 35px); min-width: calc(100% - 35px); flex-direction: column; padding: 17px; border: 1px solid #dfe6e1; border-radius: 20px; background: #fff; box-shadow: 0 10px 24px rgba(20,36,42,.08); scroll-snap-align: center; }
 .benefit-card.current { background: linear-gradient(160deg, #f8faef, #fff); }
 .benefit-card.next { border-color: #aec75a; box-shadow: 0 12px 28px rgba(74,100,44,.13); }
 .benefit-card-top { display: flex; justify-content: space-between; padding-bottom: 13px; border-bottom: 1px solid #e7ece8; }
@@ -206,7 +207,7 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .benefit-item.new { color: #9a4937; background: #fff1ec; }
 .benefit-item.new i { background: var(--coral); }
 .benefit-item em { padding: 3px 6px; border-radius: 999px; color: #fff; background: var(--coral); font-size: 7px; font-style: normal; font-weight: 800; }
-.benefit-card > button { width: 100%; padding: 9px; border: 0; border-radius: 10px; color: #fff; background: var(--navy); cursor: pointer; font-size: 9px; }
+.benefit-card > button { width: 100%; margin-top: auto; padding: 9px; border: 0; border-radius: 10px; color: #fff; background: var(--navy); cursor: pointer; font-size: 9px; }
 .more-benefits-card { display: flex; flex-direction: column; border-style: dashed; border-color: #aab9b1; background: #f7faf7; }
 .more-benefits-top { display: flex; align-items: center; justify-content: space-between; }
 .more-benefits-top span { color: var(--teal); font-size: 8px; font-weight: 800; }
@@ -219,7 +220,6 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .more-benefits-lock::after { position: absolute; right: 1px; bottom: 0; left: 1px; height: 24px; border-radius: 7px; background: var(--navy); content: ""; }
 .more-benefits-preview { display: grid; gap: 7px; margin-bottom: 18px; }
 .more-benefits-preview span { padding: 8px 0; border-bottom: 1px solid #dfe6e1; color: #52625c; font-size: 9px; }
-.more-benefits-card > button { margin-top: auto; }
 .level-card { display: flex; gap: 10px; margin: 8px 0; padding: 11px; border: 1px solid #e5e9e5; border-radius: 13px; background: #fff; }
 .level-card.current { border-color: #b9d44d; box-shadow: inset 3px 0 #b9d44d; }
 .level-badge { display: grid; width: 38px; height: 38px; flex: none; place-items: center; border-radius: 11px; color: #fff; background: var(--navy); font-size: 10px; }
@@ -274,6 +274,8 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .ledger-note { display: flex; align-items: center; gap: 7px; padding: 9px 11px; border: 1px solid #dce8e1; border-radius: 11px; color: #577269; background: #eff6f2; font-size: 8px; }
 .ledger-note i { display: grid; width: 17px; height: 17px; flex: none; place-items: center; border-radius: 50%; color: #fff; background: var(--teal); font-style: normal; }
 .team-overview { display: grid; grid-template-columns: 1.3fr 1fr 1fr; overflow: hidden; border-radius: 18px; color: #fff; background: var(--navy); }
+.team-overview.extended { grid-template-columns: repeat(4, 1fr); }
+.team-overview.extended > div { padding-inline: 9px; }
 .team-overview > div { display: grid; min-height: 84px; padding: 13px; align-content: center; border-right: 1px solid rgba(255,255,255,.12); }
 .team-overview > div:last-child { border-right: 0; }
 .team-overview span, .team-overview small { color: #b7c8c4; font-size: 7px; }
@@ -427,6 +429,34 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .store-entry-card strong { margin-top: 2px; font-size: 12px; }
 .store-entry-card em { margin-top: 3px; color: var(--muted); font-size: 7px; font-style: normal; }
 .store-entry-card > b { grid-column: 2; color: var(--teal); font-size: 8px; }
+.mine-store-hero { min-height: 96px; margin: 10px 0 12px; padding: 16px; border-color: #cae2d9; background: radial-gradient(circle at 92% 10%, rgba(223,245,111,.55), transparent 28%), linear-gradient(145deg, #eff8f4, #f8fbf3); box-shadow: 0 10px 24px rgba(21,79,69,.08); }
+.mine-store-hero .store-entry-mark { width: 46px; height: 46px; }
+.mine-store-hero.opening { background: radial-gradient(circle at 91% 8%, rgba(71,183,161,.2), transparent 30%), linear-gradient(145deg, #eff8f5, #f8f6df); }
+.mine-service-panels { display: grid; gap: 9px; margin-bottom: 10px; }
+.mine-service-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.mine-service-card, .mine-assessor-card { border: 1px solid #e0e6e1; background: #fff; cursor: pointer; }
+.mine-service-card { position: relative; display: grid; min-height: 74px; grid-template-columns: auto 1fr; gap: 8px; align-items: center; padding: 13px; border-radius: 16px; text-align: left; }
+.mine-service-card i, .mine-assessor-card i { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 10px; color: var(--teal); background: var(--mint); font-style: normal; font-weight: 800; }
+.mine-service-card strong { font-size: 10px; }
+.mine-service-card em { position: absolute; top: 9px; right: 9px; min-width: 19px; padding: 3px 5px; border-radius: 999px; color: #fff; background: var(--coral); font-size: 7px; font-style: normal; text-align: center; }
+.mine-assessor-card { display: flex; min-height: 62px; align-items: center; justify-content: space-between; padding: 11px 13px; border-radius: 16px; }
+.mine-assessor-card > span { display: flex; align-items: center; gap: 8px; }
+.mine-assessor-card strong { font-size: 10px; }
+.mine-assessor-card em { padding: 3px 5px; border-radius: 999px; color: #fff; background: var(--coral); font-size: 7px; font-style: normal; }
+.mine-assessor-card > b { color: #8c9994; font-size: 8px; }
+.mine-wallet-card { display: block; width: 100%; margin-bottom: 10px; padding: 14px; border: 1px solid #e0e6e1; border-radius: 18px; background: #fff; cursor: pointer; text-align: left; }
+.mine-wallet-head { display: flex; align-items: center; justify-content: space-between; }
+.mine-wallet-head h3 { margin: 0; font-size: 13px; }
+.mine-wallet-head span { color: var(--muted); font-size: 8px; }
+.mine-wallet-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.mine-wallet-metrics > span { position: relative; color: var(--muted); font-size: 8px; }
+.mine-wallet-metrics b { display: block; margin-top: 5px; color: var(--navy); font-size: 18px; }
+.mine-wallet-metrics em { position: absolute; right: 2px; top: -2px; padding: 3px 6px; border-radius: 999px; color: #fff; background: var(--coral); font-size: 6px; font-style: normal; }
+.mine-common-features { margin-bottom: 2px; }
+.common-feature-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 5px; }
+.common-feature-grid button { min-width: 0; padding: 4px 1px; border: 0; color: var(--navy); background: transparent; cursor: pointer; font-size: 8px; }
+.common-feature-grid i { display: grid; width: 30px; height: 30px; margin: 0 auto 5px; place-items: center; border-radius: 10px; color: var(--teal); background: var(--mint); font-style: normal; font-weight: 800; }
+.common-feature-grid span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .register-intro, .share-hero { margin: 0 -14px 10px; padding: 22px 18px; color: #fff; background: linear-gradient(145deg, #102a34, #1a6b60); }
 .register-intro h2, .share-hero h2 { margin: 6px 0; font-family: var(--font-title); font-size: 22px; }
 .register-intro p, .share-hero p { margin: 0; color: #c3d9d3; font-size: 8px; line-height: 1.6; }

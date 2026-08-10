@@ -18,9 +18,9 @@
   };
 
   const conditions = [
-    { name: '有效成交客户', current: 18, target: 20, enabled: true },
-    { name: '团队有效订单', current: 9, target: 20, enabled: true },
-    { name: '累计已结算店铺收益', current: 8800, target: 10000, enabled: true, money: true },
+    { name: '店铺客户', current: 18, target: 20, enabled: true },
+    { name: '店铺收益', current: 8800, target: 10000, enabled: true, money: true },
+    { name: '团队店主', current: 9, target: 20, enabled: true },
   ];
 
   const incomeRows = [
@@ -37,6 +37,14 @@
     { id: 'XJ08060196', status: '待收货', owner: '直属客户 · 陈先生', category: '手机', updated: '昨天 18:15' },
     { id: 'XJ08060173', status: '待质检', owner: '一级团队 · 吴女士', category: '鞋服', updated: '昨天 14:02' },
     { id: 'XJ08050108', status: '待确认', owner: '本人经营', category: '图书', updated: '08-05 11:35' },
+  ];
+
+  const teamDataMembers = [
+    { name: '周先生', kind: '一级团队', meta: '轻享店主·LV3 · 正常经营', value: '12笔' },
+    { name: '吴女士', kind: '一级团队', meta: '成长店主·LV2 · 正常经营', value: '5笔' },
+    { name: '赵店主', kind: '二级团队', meta: '成长店主·LV6 · 信息已脱敏', value: '8笔' },
+    { name: '孙店主', kind: '二级团队', meta: '进阶店主·LV8 · 信息已脱敏', value: '6笔' },
+    { name: '钱店主', kind: '二级团队', meta: '轻享店主·LV4 · 信息已脱敏', value: '4笔' },
   ];
 
   const teamMembers = [
@@ -91,8 +99,39 @@
     return `<section class="profile-hero">
       <div class="profile-row"><div class="avatar">陈</div><div class="profile-main"><div class="profile-name-line"><h2>陈先生</h2><span class="status-chip ${statusTone(state.status)}">${state.status}</span></div>
       <p><span class="identity-label">${identity.identity}·LV${identity.level}</span><small>店铺编号 JX-0805168</small></p>
-      <button class="profile-growth" type="button" data-page="growth"><span>${identity.level === 12 ? '合伙人权益已全部生效' : `距 LV${identity.level + 1} 还差 3 笔团队订单`}</span><div class="profile-progress"><i style="width:${identity.level === 12 ? 100 : progress}%"></i></div><b>${identity.level === 12 ? 100 : progress}% →</b></button></div></div>
+      <button class="profile-growth" type="button" data-page="growth"><span>${identity.level === 12 ? '合伙人权益已全部生效' : `距 LV${identity.level + 1} 还差 11 位团队店主`}</span><div class="profile-progress"><i style="width:${identity.level === 12 ? 100 : progress}%"></i></div><b>${identity.level === 12 ? 100 : progress}% →</b></button></div></div>
     </section>`;
+  }
+
+  function renderMineServicePanels() {
+    return `<section class="mine-service-panels" aria-label="回收服务">
+      <div class="mine-service-pair">
+        <button class="mine-service-card" type="button" data-toast="已打开我的评估"><i>估</i><strong>我的评估</strong><em>17</em></button>
+        <button class="mine-service-card" type="button" data-root="orders"><i>单</i><strong>我的订单</strong><em>7</em></button>
+      </div>
+      <button class="mine-assessor-card" type="button" data-toast="已进入评估师服务"><span><i>师</i><strong>评估师</strong><em>57</em></span><b>去评估 ›</b></button>
+    </section>`;
+  }
+
+  function renderMineWallet() {
+    const wallet = model.getWalletSummary();
+    return `<button class="mine-wallet-card" type="button" data-page="wallet" aria-label="查看我的钱包"><div class="mine-wallet-head"><h3>我的钱包</h3><span>查看明细 ›</span></div><div class="mine-wallet-metrics"><span>账户余额（元）<b>${wallet.withdrawable.toFixed(2)}</b></span><span><em>使用加价券</em>加价券<b>14</b></span></div></button>`;
+  }
+
+  function renderCommonFeatures() {
+    return `<section class="section-card mine-common-features"><div class="section-card-head"><h3>常用功能</h3></div><div class="common-feature-grid">
+      <button type="button" data-toast="已打开地址管理"><i>址</i><span>地址管理</span></button>
+      <button type="button" data-toast="已打开收款信息"><i>卡</i><span>收款信息</span></button>
+      <button type="button" data-toast="正在联系平台客服"><i>客</i><span>联系客服</span></button>
+      <button type="button" data-toast="分享链接已生成"><i>享</i><span>分享得奖励</span></button>
+      <button type="button" data-toast="已打开个人信息"><i>改</i><span>修改信息</span></button>
+      <button type="button" data-root="home"><i>鉴</i><span>鉴定中心</span></button>
+      <button type="button" data-toast="已打开平台合作说明"><i>合</i><span>合作</span></button>
+    </div></section>`;
+  }
+
+  function renderOrdinaryStoreEntry() {
+    return `<button class="store-entry-card mine-store-hero opening" type="button" data-page="register"><span class="store-entry-mark">店</span><span><small>回收店服务</small><strong>开通我的回收店</strong><em>登记成为回收店主，解锁经营、成长与分享能力</em></span><b>立即登记开店 →</b></button>`;
   }
 
   function renderWalletPreview() {
@@ -103,15 +142,15 @@
 
   function renderMine() {
     const identity = model.getIdentityView(state);
-    if (!identity.showStoreArea) {
-      return `<section class="profile-card"><div class="profile-row"><div class="avatar">陈</div><div class="profile-main"><h2>陈先生</h2><p>普通用户·LV1</p></div></div></section>
-        <section class="ordinary-hero"><span>闲置焕新</span><h2>让闲置好物继续流转</h2><p>估价、寄送、质检和结算都由平台完成。</p></section>
-        <section class="open-store-card"><span class="section-label">成为回收店主</span><h2>开通我的回收店</h2><p>拥有专属店铺身份、经营数据、成长权益与传播素材。</p><button type="button" data-page="register">立即登记开店</button></section>
-        <section class="section-card"><div class="section-card-head"><h3>常用服务</h3></div><div class="agent-grid"><button type="button" data-root="home"><i>估</i><span>在线估价</span></button><button type="button" data-root="orders"><i>单</i><span>回收订单</span></button><button type="button" data-page="wallet"><i>钱</i><span>我的钱包</span></button></div></section>`;
-    }
-    return `${renderProfile(identity)}
-      <button class="store-entry-card" type="button" data-page="store"><span class="store-entry-mark">店</span><span><small>认证回收店</small><strong>陈先生回收店</strong><em>本月 14 笔有效订单 · 新增 8 位客户</em></span><b>进入我的回收店 →</b></button>
-      ${renderWalletPreview()}`;
+    const profile = identity.showStoreArea ? renderProfile(identity) : '<section class="profile-card"><div class="profile-row"><div class="avatar">陈</div><div class="profile-main"><h2>陈先生</h2><p>普通用户·LV1</p></div></div></section>';
+    const storeEntry = identity.showStoreArea
+      ? '<button class="store-entry-card mine-store-hero" type="button" data-page="store"><span class="store-entry-mark">店</span><span><small>认证回收店</small><strong>陈先生回收店</strong><em>本月 14 笔有效订单 · 新增 8 位客户</em></span><b>进入我的回收店 →</b></button>'
+      : renderOrdinaryStoreEntry();
+    return `${profile}${storeEntry}
+      ${renderMineServicePanels()}
+      ${identity.showStoreArea ? renderWalletPreview() : ''}
+      ${renderMineWallet()}
+      ${renderCommonFeatures()}`;
   }
 
   function renderRegister() {
@@ -156,11 +195,11 @@
     }).join('');
     const cardMarkup = cards.map((card, index) => {
       const action = index === 0 ? `data-benefit-help="${card.level}"` : `data-upgrade-conditions="${card.level}"`;
-      return `<article class="benefit-card ${index === 0 ? 'current' : index === 1 ? 'next' : ''}"><div class="benefit-card-top"><div><span>${index === 0 ? '当前等级' : index === 1 ? '下一级' : '后续等级'}</span><h2>LV${card.level}</h2><p>${card.identity}</p></div><b>${index === 0 ? '已生效' : index === 1 ? '升级目标' : '继续成长'}</b></div><div class="benefit-list">${card.benefits.map((benefit) => `<div class="benefit-item ${benefit.isNew ? 'new' : ''}"><i>✓</i><span>${benefit.name}</span>${benefit.isNew ? '<em>新增</em>' : ''}</div>`).join('')}</div><button type="button" ${action}>${index === 0 ? '查看权益使用说明' : `查看LV${card.level}升级条件`}</button></article>`;
+      return `<article class="benefit-card ${index === 0 ? 'current' : index === 1 ? 'next' : ''}" data-level-card="${index}"><div class="benefit-card-top"><div><span>${index === 0 ? '当前等级' : index === 1 ? '下一级' : '后续等级'}</span><h2>LV${card.level}</h2><p>${card.identity}</p></div><b>${index === 0 ? '已生效' : index === 1 ? '升级目标' : '继续成长'}</b></div><div class="benefit-list">${card.benefits.map((benefit) => `<div class="benefit-item ${benefit.isNew ? 'new' : ''}"><i>✓</i><span>${benefit.name}</span>${benefit.isNew ? '<em>新增</em>' : ''}</div>`).join('')}</div><button type="button" ${action}>${index === 0 ? '查看权益使用说明' : `查看LV${card.level}升级条件`}</button></article>`;
     }).join('');
-    const moreCard = roadmap.length ? `<article class="benefit-card more-benefits-card"><div class="more-benefits-top"><span>更多等级</span><b>待解锁</b></div><div class="more-benefits-copy"><i class="more-benefits-lock" aria-hidden="true"></i><h2>升级解锁更多权益</h2><p>继续成长，逐步解锁 LV${roadmap[0].level}–LV${roadmap[roadmap.length - 1].level} 经营能力。</p></div><div class="more-benefits-preview"><span>更多经营品类</span><span>高阶团队能力</span><span>专属运营支持</span></div><button type="button" data-level-roadmap>查看全部等级权益</button></article>` : '';
+    const moreCard = roadmap.length ? `<article class="benefit-card more-benefits-card" data-level-card="${cards.length}"><div class="more-benefits-top"><span>更多等级</span><b>待解锁</b></div><div class="more-benefits-copy"><i class="more-benefits-lock" aria-hidden="true"></i><h2>升级解锁更多权益</h2><p>继续成长，逐步解锁 LV${roadmap[0].level}–LV${roadmap[roadmap.length - 1].level} 经营能力。</p></div><div class="more-benefits-preview"><span>更多经营品类</span><span>高阶团队能力</span><span>专属运营支持</span></div></article>` : '';
     return `<section class="growth-progress-panel"><div class="growth-progress-head"><div><span>成长总览</span><h2>${model.getIdentityView(state).identity}·LV${state.level}</h2></div><strong>综合进度 ${progressValue()}%</strong></div><p>升级条件需全部满足，橙色为当前最慢指标。</p><div class="condition-list">${conditionProgress}</div></section>
-      <div class="level-section-head"><div><span class="section-label">等级权益</span><h3>横向滑动查看下一级全部权益</h3></div><div class="level-dots">${cards.map((card, index) => `<button class="${index === 0 ? 'active' : ''}" type="button" aria-label="查看LV${card.level}"></button>`).join('')}${roadmap.length ? '<button class="locked" type="button" aria-label="查看更多等级权益"></button>' : ''}</div></div>
+      <div class="level-section-head"><div><span class="section-label">等级权益</span><h3>横向滑动查看下一级全部权益</h3></div><div class="level-dots">${cards.map((card, index) => `<button class="${index === 0 ? 'active' : ''}" type="button" data-level-dot="${index}" aria-label="查看LV${card.level}" ${index === 0 ? 'aria-current="true"' : ''}></button>`).join('')}${roadmap.length ? `<button class="locked" type="button" data-level-dot="${cards.length}" aria-label="查看更多等级权益"></button>` : ''}</div></div>
       <section class="level-carousel">${cardMarkup}${moreCard}</section>`;
   }
 
@@ -184,12 +223,14 @@
   function renderTeam() {
     const visibility = model.getTeamVisibility(state.level);
     const allowed = teamMembers.filter((member) => visibility.depth === 2 || member.kind !== '二级店主');
-    const rows = model.filterTeamMembers(allowed, state.teamFilter);
-    const tabs = visibility.depth === 2 ? ['全部', '直属店主', '直属客户', '二级店主'] : ['全部', '直属店主', '直属客户'];
-    return `<section class="team-contribution"><div><div><span>下一级升级贡献</span><strong>团队有效订单 9 / 20</strong></div><b>45%</b></div><div class="progress-track"><i style="width:45%"></i></div><p>团队有效订单是当前最慢指标，还差 11 笔达到升级条件。</p></section>
-      <section class="team-overview"><div><span>有效订单</span><strong>14</strong><small>本月授权范围</small></div><div><span>直属客户</span><b>26</b><small>已完成绑定</small></div><div><span>直属店主</span><b>8</b><small>${visibility.depth}级可见范围</small></div></section>
+    const rows = state.teamFilter === '团队数据' ? teamDataMembers : model.filterTeamMembers(allowed, state.teamFilter);
+    const tabs = visibility.depth === 2 ? ['全部', '直属店主', '直属客户', '二级店主', '团队数据'] : ['全部', '直属店主', '直属客户'];
+    const teamOverviewClass = visibility.depth === 2 ? 'team-overview extended' : 'team-overview';
+    const listContent = `<section class="section-card">${rows.map((member) => `<button class="person-row person-button" type="button" data-toast="已打开${member.name}的脱敏经营资料"><span class="person-avatar">${member.name[0]}</span><span class="person-copy"><strong>${member.name}<em class="member-kind">${member.kind}</em></strong><span>${member.meta}</span></span><b>${member.value}</b><i>›</i></button>`).join('')}</section>`;
+    return `<section class="team-contribution"><div><div><span>下一级升级贡献</span><strong>团队店主 9 / 20</strong></div><b>45%</b></div><div class="progress-track"><i style="width:45%"></i></div><p>团队店主是当前最慢指标，还差 11 位直属店主达到升级条件。</p></section>
+      <section class="${teamOverviewClass}"><div><span>有效订单</span><strong>14</strong><small>本月授权范围</small></div><div><span>直属客户</span><b>26</b><small>已完成绑定</small></div><div><span>直属店主</span><b>8</b><small>${visibility.depth}级可见范围</small></div>${visibility.depth === 2 ? '<div><span>团队数量</span><b>42</b><small>一级＋二级店主</small></div>' : ''}</section>
       <div class="filter-tabs team-tabs">${tabs.map((type) => `<button class="${state.teamFilter === type ? 'active' : ''}" type="button" data-team-filter="${type}">${type}</button>`).join('')}</div>
-      <section class="section-card">${rows.map((member) => `<button class="person-row person-button" type="button" data-toast="已打开${member.name}的脱敏经营资料"><span class="person-avatar">${member.name[0]}</span><span class="person-copy"><strong>${member.name}<em class="member-kind">${member.kind}</em></strong><span>${member.meta}</span></span><b>${member.value}</b><i>›</i></button>`).join('')}</section><p class="privacy-note">可见范围扩大不代表新增收益层级，不改变现有客户绑定关系。</p>`;
+      ${listContent}<p class="privacy-note">可见范围扩大不代表新增收益层级，不改变现有客户绑定关系。</p>`;
   }
 
   function renderShare() {
@@ -218,7 +259,7 @@
 
   function renderContent() {
     const item = state.selectedContent || trainingContent.学习资料[0];
-    if (item.locked) return `<section class="locked-content"><span class="lock-symbol">锁</span><h2>${item.title}</h2><p>该内容需要轻享店主·LV5解锁。当前等级 LV${state.level}，还差 3 笔团队有效订单。</p><button type="button" data-page="growth">查看解锁条件</button></section>`;
+    if (item.locked) return `<section class="locked-content"><span class="lock-symbol">锁</span><h2>${item.title}</h2><p>该内容需要轻享店主·LV5解锁。当前等级 LV${state.level}，还差 11 位团队店主。</p><button type="button" data-page="growth">查看解锁条件</button></section>`;
     return `<section class="content-detail"><span class="section-label">${item.category}</span><h2>${item.title}</h2><p>${item.meta}</p><div class="content-media">${state.materialTab === '视频素材' ? '<span class="play-button">▶</span><small>视频播放演示</small>' : '<strong>店主经营内容示例</strong><p>围绕真实回收场景，向客户说明可回收品类、服务流程与平台保障。内容不承诺预测收益，也不披露客户隐私。</p>'}</div><button type="button" data-toast="内容操作已完成">${item.action}</button></section>`;
   }
 
@@ -275,6 +316,48 @@
     modal.hidden = false;
   }
 
+  function bindLevelCarouselIndicators() {
+    const carousel = content.querySelector('.level-carousel');
+    if (!carousel) return;
+    const cards = [...carousel.querySelectorAll('[data-level-card]')];
+    const dots = [...content.querySelectorAll('[data-level-dot]')];
+    if (!cards.length || !dots.length) return;
+
+    const updateActiveDot = () => {
+      const viewportCenter = carousel.scrollLeft + carousel.clientWidth / 2;
+      let activeIndex = 0;
+      let nearestDistance = Number.POSITIVE_INFINITY;
+      cards.forEach((card, index) => {
+        const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+        const distance = Math.abs(cardCenter - viewportCenter);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          activeIndex = index;
+        }
+      });
+      dots.forEach((dot, index) => {
+        const active = index === activeIndex;
+        dot.classList.toggle('active', active);
+        if (active) dot.setAttribute('aria-current', 'true');
+        else dot.removeAttribute('aria-current');
+      });
+    };
+
+    let updateQueued = false;
+    carousel.addEventListener('scroll', () => {
+      if (updateQueued) return;
+      updateQueued = true;
+      requestAnimationFrame(() => {
+        updateQueued = false;
+        updateActiveDot();
+      });
+    }, { passive: true });
+    dots.forEach((dot, index) => dot.addEventListener('click', () => {
+      cards[index]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }));
+    updateActiveDot();
+  }
+
   function render() {
     renderHeader();
     const renderers = {
@@ -284,6 +367,7 @@
       rules: renderRules, status: renderStatus, advisor: renderAdvisor,
     };
     content.innerHTML = renderers[state.page] ? renderers[state.page]() : renderEmpty(state.root);
+    bindLevelCarouselIndicators();
     document.querySelectorAll('[data-bottom-nav] button').forEach((button) => button.classList.toggle('active', button.dataset.root === state.root));
   }
 
