@@ -311,6 +311,28 @@ test('同档店铺收益规则用档位表格对照有收益和无收益场景',
   assert.equal(rules.includes('均为15%'), false, '不得把示例15%写成所有轻享店主的固定比例');
 });
 
+test('店主我的页头部不展示经营状态标签', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const profile = sourceSection(source, 'function renderProfile(identity)', 'function renderMineServicePanels()');
+  assert.equal(profile.includes('status-chip'), false, '店主资料头部不应展示状态标签');
+  assert.equal(profile.includes('state.status'), false, '店主资料头部不应输出当前状态');
+  assert.equal(profile.includes('profile-name-line'), false, '不应保留状态标签使用的姓名行容器');
+  assert.equal(styles.includes('.profile-name-line'), false, '不应保留姓名状态行样式');
+});
+
+test('我的钱包二级页仅提示复用既有页面', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const wallet = sourceSection(source, 'function renderWallet()', 'function renderTeamOrders()');
+  assert.ok(wallet.includes('wallet-reuse-note'), '钱包页缺少复用说明容器');
+  assert.ok(wallet.includes('复用“我的钱包”页面'), '钱包页缺少复用说明');
+  for (const marker of ['wallet-card', '申请提现', '收入分类说明', 'data-income-filter', 'ledger-list']) {
+    assert.equal(wallet.includes(marker), false, `钱包页仍保留旧内容：${marker}`);
+  }
+  assert.ok(styles.includes('.wallet-reuse-note'), '缺少钱包复用说明居中样式');
+});
+
 test('店主首屏收益摘要仅展示两项数据且整块跳转我的回收店', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const preview = sourceSection(source, 'function renderWalletPreview()', 'function renderMine()');
@@ -352,6 +374,20 @@ test('普通用户使用开店入口且不展示经营收益', () => {
   assert.equal(source.includes('function renderOrdinaryEarnings()'), false, '普通用户不应保留经营收益组件');
   const mine = sourceSection(source, 'function renderMine()', 'function renderRegister()');
   assert.equal(mine.includes('renderOrdinaryEarnings()'), false, '普通用户不应渲染经营收益');
+});
+
+test('普通用户头像区展示可复制的用户ID', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  assert.ok(source.includes('function renderOrdinaryProfile()'), '缺少普通用户头像区组件');
+  const profile = sourceSection(source, 'function renderOrdinaryProfile()', 'function renderMineServicePanels()');
+  for (const marker of ['profile-card', '普通用户·LV1', "const userId = '2039230691077779458'", 'ID：${userId}', 'data-copy-user-id="${userId}"', 'aria-label="复制用户ID"']) {
+    assert.ok(profile.includes(marker), `普通用户头像区缺少：${marker}`);
+  }
+  for (const marker of ["event.target.closest('[data-copy-user-id]')", 'navigator.clipboard', "showToast('ID 已复制')"]) {
+    assert.ok(source.includes(marker), `普通用户ID复制交互缺少：${marker}`);
+  }
+  assert.ok(styles.includes('.ordinary-profile-id'), '缺少普通用户ID行样式');
 });
 
 test('小程序培训素材覆盖三类内容和等级锁定', () => {

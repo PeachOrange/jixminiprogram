@@ -116,10 +116,15 @@
   function renderProfile(identity) {
     const progress = progressValue();
     return `<section class="profile-hero">
-      <div class="profile-row"><div class="avatar">陈</div><div class="profile-main"><div class="profile-name-line"><h2>陈先生</h2><span class="status-chip ${statusTone(state.status)}">${state.status}</span></div>
+      <div class="profile-row"><div class="avatar">陈</div><div class="profile-main"><h2>陈先生</h2>
       <p><span class="identity-label">${identity.identity}·LV${identity.level}</span><small>店铺编号 JX-0805168</small></p>
       <button class="profile-growth" type="button" data-page="growth"><span>${identity.level === 12 ? '合伙人权益已全部生效' : `距 LV${identity.level + 1} 还差 11 位团队店主`}</span><div class="profile-progress"><i style="width:${identity.level === 12 ? 100 : progress}%"></i></div><b>${identity.level === 12 ? 100 : progress}% →</b></button></div></div>
     </section>`;
+  }
+
+  function renderOrdinaryProfile() {
+    const userId = '2039230691077779458';
+    return `<section class="profile-card ordinary-profile-card"><div class="profile-row"><div class="avatar">陈</div><div class="profile-main"><h2>陈先生</h2><p>普通用户·LV1</p><div class="ordinary-profile-id"><span>ID：${userId}</span><button type="button" data-copy-user-id="${userId}" aria-label="复制用户ID">复制</button></div></div></div></section>`;
   }
 
   function renderMineServicePanels() {
@@ -164,7 +169,7 @@
 
   function renderMine() {
     const identity = model.getIdentityView(state);
-    const profile = identity.showStoreArea ? renderProfile(identity) : '<section class="profile-card"><div class="profile-row"><div class="avatar">陈</div><div class="profile-main"><h2>陈先生</h2><p>普通用户·LV1</p></div></div></section>';
+    const profile = identity.showStoreArea ? renderProfile(identity) : renderOrdinaryProfile();
     const storeEntry = identity.showStoreArea
       ? '<button class="store-entry-card mine-store-hero" type="button" data-page="store"><span class="store-entry-mark">店</span><span><small>认证回收店</small><strong>陈先生回收店</strong><em>本月 14 笔有效订单 · 新增 8 位客户</em></span><b>进入我的回收店 →</b></button>'
       : renderOrdinaryStoreEntry();
@@ -229,12 +234,7 @@
   }
 
   function renderWallet() {
-    const wallet = model.getWalletSummary();
-    const rows = model.filterIncome(incomeRows, state.incomeFilter);
-    return `<section class="wallet-total-card"><span>统一钱包 · 可提现余额</span><strong>${money(wallet.withdrawable)}</strong><button type="button" data-toast="提现申请已进入统一提现流程">申请提现</button><div><p><span>待结算业务收益</span><b>${money(wallet.pendingBusiness)}</b></p><p><span>待解锁拉新收益</span><b>${money(wallet.lockedAcquisition)}</b></p></div></section>
-      <section class="wallet-boundary"><strong>收入分类说明</strong><p>回收收入不计入店铺经营收益和升级指标；拉新收益无论是否解锁均不计入升级。</p></section>
-      <div class="filter-tabs wallet-filters">${['全部', ...wallet.categories].map((type) => `<button class="${state.incomeFilter === type ? 'active' : ''}" type="button" data-income-filter="${type}">${type}</button>`).join('')}</div>
-      <section class="ledger-list">${rows.map((row) => `<article><i>${row.icon}</i><span><b>${row.title}</b><small>${row.detail}</small>${row.calculation ? `<em>${row.calculation}<br>${row.rule}</em>` : ''}</span><strong class="${row.pending ? 'pending' : ''}">${row.value}</strong></article>`).join('')}</section>`;
+    return '<section class="wallet-reuse-note"><p>复用“我的钱包”页面</p></section>';
   }
 
   function renderTeamOrders() {
@@ -504,6 +504,11 @@
     if (upgradeConditionsButton) renderUpgradeConditionsModal(Number(upgradeConditionsButton.dataset.upgradeConditions));
     if (event.target.closest('[data-locked-income-help]')) renderLockedIncomeHelpModal();
     if (event.target.closest('[data-level-roadmap]')) renderLevelRoadmapModal();
+    const copyUserIdButton = event.target.closest('[data-copy-user-id]');
+    if (copyUserIdButton) {
+      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(copyUserIdButton.dataset.copyUserId).catch(() => {});
+      showToast('ID 已复制');
+    }
     if (event.target.closest('[data-phone-authorization]') && !state.phoneAuthorized) renderPhoneAuthorizationSheet();
     if (event.target.closest('[data-phone-authorize-deny]')) phoneAuthorizationPanel.hidden = true;
     if (event.target.closest('[data-phone-authorize-allow]')) {

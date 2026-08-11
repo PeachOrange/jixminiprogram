@@ -77,7 +77,6 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .profile-hero .profile-main h2 { margin-top: 3px; color: #fff; font-size: 16px; }
 .profile-hero .profile-main p { display: flex; align-items: center; gap: 7px; color: #b9d6d0; }
 .profile-hero .profile-main p small { color: #a9c7c0; font-size: 7px; }
-.profile-name-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .identity-label { display: inline-flex; padding: 3px 7px; border-radius: 999px; color: #16372d; background: var(--lime); font-size: 8px; font-weight: 800; }
 .profile-growth { display: grid; width: 100%; grid-template-columns: 1fr auto; gap: 5px 8px; align-items: center; margin-top: 8px; padding: 8px 9px; border: 1px solid rgba(255,255,255,.16); border-radius: 11px; color: #d8e8e4; background: rgba(255,255,255,.08); cursor: pointer; text-align: left; font-size: 8px; }
 .profile-growth > span { grid-column: 1 / -1; }
@@ -89,6 +88,9 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .profile-main { min-width: 0; flex: 1; }
 .profile-main h2 { margin: 0 0 3px; font-size: 15px; }
 .profile-main p { margin: 0; color: var(--teal); font-size: 10px; }
+.ordinary-profile-id { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+.ordinary-profile-id span { color: var(--muted); font-size: 8px; }
+.ordinary-profile-id button { padding: 2px 6px; border: 1px solid #b9d8cf; border-radius: 999px; color: var(--teal); background: #f5fbf8; cursor: pointer; font-size: 7px; }
 .status-chip { padding: 4px 8px; border-radius: 999px; color: #17694e; background: #ddf2e7; font-size: 9px; }
 .status-chip.warning { color: #84520d; background: #fff0ce; }
 .status-chip.danger { color: #913a2b; background: #fce1da; }
@@ -545,6 +547,8 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .order-page-summary { padding: 16px; border-radius: 18px; color: #fff; background: linear-gradient(145deg, #132d36, #256c63); }
 .order-page-summary > span { color: #8fdbc9; font-size: 8px; }
 .order-page-summary p { margin: 0; color: #bdd0cb; font-size: 8px; line-height: 1.5; }
+.wallet-reuse-note { display: grid; min-height: 100%; place-items: center; color: var(--muted); text-align: center; }
+.wallet-reuse-note p { margin: 0; font-size: 13px; font-weight: 700; }
 .wallet-total-card { padding: 17px; border-radius: 19px; color: #fff; background: linear-gradient(145deg, #102a34, #245d62); }
 .wallet-total-card > span, .wallet-total-card > strong { display: block; }
 .wallet-total-card > span { color: #b9cbc7; font-size: 8px; }
