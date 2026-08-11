@@ -215,26 +215,53 @@ test('小程序覆盖登记、我的回收店、统一钱包和分享页面', ()
   }
 });
 
-test('开店登记使用名称、可编辑授权手机号和选填微信号且不展示店名预览', () => {
+test('开店登记使用名称、可编辑手机号和选填微信号且不展示店名预览', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const styles = readFileSync(`${root}/styles.css`, 'utf8');
   const register = sourceSection(source, 'function renderRegister()', 'function renderRegisterSuccess()');
   for (const marker of [
     '<span>名称</span>',
     '微信号 <small>选填</small>',
-    '微信已授权',
-    '已通过微信授权自动填充，可手动修改',
   ]) {
     assert.ok(register.includes(marker), `登记表单缺少：${marker}`);
   }
   assert.equal(register.includes('真实姓名'), false, '登记表单不应继续展示真实姓名');
   assert.equal(register.includes('readonly'), false, '手机号必须允许手动修改');
   assert.equal(register.includes('name="storeName"'), false, '不应保留店铺名称输入框');
+  assert.equal(register.includes('微信已授权'), false, '手机号右侧不应保留微信授权状态');
+  assert.equal(register.includes('wechat-authorized-status'), false, '手机号右侧不应保留授权状态元素');
   assert.equal(register.includes('store-name-preview'), false, '不应展示自动店名预览卡片');
   assert.equal(source.includes('data-store-name-preview'), false, '不应保留店名预览事件目标');
   assert.equal(register.includes('name="wechat" value="${escapeAttribute(registration.wechat)}" placeholder="用于运营老师联系" required'), false, '微信号不应必填');
   assert.equal(styles.includes('.store-name-preview'), false, '不应保留自动店名预览样式');
-  assert.ok(styles.includes('.wechat-authorized-status'), '缺少微信授权状态样式');
+  assert.equal(styles.includes('.wechat-authorized-status'), false, '不应保留微信授权状态样式');
+});
+
+test('点击手机号输入框从设备底部打开微信授权面板', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const html = readFileSync(`${root}/index.html`, 'utf8');
+  const register = sourceSection(source, 'function renderRegister()', 'function renderRegisterSuccess()');
+  assert.ok(register.includes('data-phone-authorization'), '手机号输入框缺少授权触发标识');
+  for (const marker of [
+    "document.getElementById('phone-authorization-panel')",
+    'function renderPhoneAuthorizationSheet()',
+    '申请获取你的手机号',
+    '用于开店登记和运营联系',
+    'data-phone-authorize-deny',
+    'data-phone-authorize-allow',
+    '>拒绝<',
+    '>允许<',
+    "event.target.closest('[data-phone-authorization]')",
+    "document.querySelector('#registration-form [name=\"phone\"]')",
+  ]) {
+    assert.ok(source.includes(marker), `手机号授权交互缺少：${marker}`);
+  }
+  assert.ok(html.includes('id="phone-authorization-panel"'), '设备内缺少手机号授权面板挂载点');
+  assert.match(html, /<div class="phone-authorization-panel" id="phone-authorization-panel" hidden><\/div>\s*<nav class="bottom-nav"/, '授权面板应位于设备内并覆盖底部导航');
+  for (const marker of ['.phone-authorization-panel', '.phone-authorization-sheet', '.phone-authorization-actions']) {
+    assert.ok(styles.includes(marker), `手机号授权面板缺少样式：${marker}`);
+  }
 });
 
 test('开店登记提供底部省市选择器和店主合作规范弹窗', () => {

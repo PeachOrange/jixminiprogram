@@ -9,6 +9,7 @@
   const scenarioPanel = document.getElementById('scenario-controls');
   const scenarioToggle = document.getElementById('scenario-toggle');
   const modal = document.getElementById('upgrade-modal');
+  const phoneAuthorizationPanel = document.getElementById('phone-authorization-panel');
   const toast = document.getElementById('toast');
   const upgradeButton = document.getElementById('show-upgrade');
 
@@ -17,6 +18,7 @@
     timeScope: '本月', incomeFilter: '全部', orderFilter: '全部', teamFilter: '全部', materialTab: '发圈工具',
     selectedContent: null, registration: null, registrationResult: 'created', contentScenario: 'normal',
     cityPickerProvince: '上海市', cityPickerCity: '上海市',
+    phoneAuthorized: false,
   };
 
   const cityCatalog = {
@@ -180,7 +182,7 @@
     return `<section class="register-intro"><span class="section-label">最小登记</span><h2>开通我的回收店</h2><p>提交后由运营老师与你联系，不会提前创建店主身份或发放权益。</p></section>
       <form class="registration-form" id="registration-form">
         <label><span>名称</span><input name="realName" value="${escapeAttribute(registration.realName)}" autocomplete="name" required></label>
-        <label><span>手机号</span><div class="inline-input"><input name="phone" value="${escapeAttribute(registration.phone)}" inputmode="tel" autocomplete="tel" required><em class="wechat-authorized-status">微信已授权</em></div><small class="form-field-help">已通过微信授权自动填充，可手动修改</small></label>
+        <label><span>手机号</span><input name="phone" value="${escapeAttribute(registration.phone)}" inputmode="tel" autocomplete="tel" data-phone-authorization required></label>
         <label><span>微信号 <small>选填</small></span><input name="wechat" value="${escapeAttribute(registration.wechat)}" placeholder="用于运营老师联系"></label>
         <label><span>所在城市</span><button class="city-picker-trigger" type="button" data-city-picker><span>${registration.city || '请选择省市'}</span><i>›</i></button><input type="hidden" name="city" value="${escapeAttribute(registration.city)}"></label>
         <div class="agreement-row"><label class="agreement"><input type="checkbox" name="agreement" required ${state.registration ? 'checked' : ''}><span>我已阅读并同意</span></label><button class="agreement-link" type="button" data-cooperation-rules>《店主合作规范》</button></div>
@@ -362,6 +364,11 @@
     modal.hidden = false;
   }
 
+  function renderPhoneAuthorizationSheet() {
+    phoneAuthorizationPanel.innerHTML = `<section class="phone-authorization-sheet" role="dialog" aria-modal="true" aria-labelledby="phone-authorization-title"><div class="phone-authorization-app"><i>极X</i><span><strong>极X星球</strong><small>申请获取你的手机号</small></span></div><h2 id="phone-authorization-title">申请获取你的手机号</h2><p>用于开店登记和运营联系，授权后仍可在输入框中手动修改。</p><div class="phone-authorization-actions"><button type="button" data-phone-authorize-deny>拒绝</button><button type="button" data-phone-authorize-allow>允许</button></div></section>`;
+    phoneAuthorizationPanel.hidden = false;
+  }
+
   function renderCityPickerModal() {
     const currentCity = document.querySelector('#registration-form [name="city"]')?.value || '上海市';
     const matchedProvince = Object.keys(cityCatalog).find((province) => cityCatalog[province].includes(currentCity)) || '上海市';
@@ -497,6 +504,15 @@
     if (upgradeConditionsButton) renderUpgradeConditionsModal(Number(upgradeConditionsButton.dataset.upgradeConditions));
     if (event.target.closest('[data-locked-income-help]')) renderLockedIncomeHelpModal();
     if (event.target.closest('[data-level-roadmap]')) renderLevelRoadmapModal();
+    if (event.target.closest('[data-phone-authorization]') && !state.phoneAuthorized) renderPhoneAuthorizationSheet();
+    if (event.target.closest('[data-phone-authorize-deny]')) phoneAuthorizationPanel.hidden = true;
+    if (event.target.closest('[data-phone-authorize-allow]')) {
+      const phoneInput = document.querySelector('#registration-form [name="phone"]');
+      if (phoneInput) phoneInput.value = '13800006815';
+      state.phoneAuthorized = true;
+      phoneAuthorizationPanel.hidden = true;
+      showToast('手机号授权成功，可继续修改');
+    }
     if (event.target.closest('[data-city-picker]')) renderCityPickerModal();
     const provinceButton = event.target.closest('[data-city-province]');
     if (provinceButton) {
@@ -546,7 +562,8 @@
     roleSelect.value = state.role; levelSelect.value = String(Math.max(2, state.level)); statusSelect.value = state.status; levelSelect.disabled = state.role !== 'owner'; state.page = 'mine'; state.history = []; render();
   }));
   modal.addEventListener('click', (event) => { if (event.target === modal) modal.hidden = true; });
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') modal.hidden = true; });
+  phoneAuthorizationPanel.addEventListener('click', (event) => { if (event.target === phoneAuthorizationPanel) phoneAuthorizationPanel.hidden = true; });
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { modal.hidden = true; phoneAuthorizationPanel.hidden = true; } });
 
   render();
 })();
