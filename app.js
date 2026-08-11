@@ -16,6 +16,14 @@
     role: 'owner', level: 4, status: '正常', page: 'mine', root: 'mine', history: [],
     timeScope: '本月', incomeFilter: '全部', orderFilter: '全部', teamFilter: '全部', materialTab: '发圈工具',
     selectedContent: null, registration: null, registrationResult: 'created', contentScenario: 'normal',
+    cityPickerProvince: '上海市', cityPickerCity: '上海市',
+  };
+
+  const cityCatalog = {
+    上海市: ['上海市'],
+    浙江省: ['杭州市', '宁波市', '温州市'],
+    江苏省: ['南京市', '苏州市', '无锡市'],
+    广东省: ['广州市', '深圳市', '佛山市'],
   };
 
   const conditions = [
@@ -33,11 +41,11 @@
   ];
 
   const teamOrders = [
-    { id: 'XJ08070018', status: '待取件', owner: '直属客户 · 林女士', category: '旧衣鞋包', updated: '今天 09:26' },
-    { id: 'XJ08070012', status: '待取件', owner: '一级团队 · 周先生', category: '鞋服', updated: '今天 08:40' },
-    { id: 'XJ08060196', status: '待收货', owner: '直属客户 · 陈先生', category: '手机', updated: '昨天 18:15' },
-    { id: 'XJ08060173', status: '待质检', owner: '一级团队 · 吴女士', category: '鞋服', updated: '昨天 14:02' },
-    { id: 'XJ08050108', status: '待确认', owner: '本人经营', category: '图书', updated: '08-05 11:35' },
+    { id: 'XJ08070018', status: '待取件', owner: '直属客户 · 林女士', category: '旧衣鞋包', updated: '今天 09:26', estimatedIncome: 12.8 },
+    { id: 'XJ08070012', status: '待取件', owner: '一级团队 · 周先生', category: '鞋服', updated: '今天 08:40', estimatedIncome: 8.6 },
+    { id: 'XJ08060196', status: '待收货', owner: '直属客户 · 陈先生', category: '手机', updated: '昨天 18:15', estimatedIncome: 56 },
+    { id: 'XJ08060173', status: '待质检', owner: '一级团队 · 吴女士', category: '鞋服', updated: '昨天 14:02', estimatedIncome: 10.5 },
+    { id: 'XJ08050108', status: '待确认', owner: '本人经营', category: '图书', updated: '08-05 11:35', estimatedIncome: 6.2 },
   ];
 
   const teamDataMembers = [
@@ -73,7 +81,7 @@
 
   const titles = {
     mine: '我的', register: '开通我的回收店', 'register-success': '登记成功', store: '我的回收店',
-    growth: '成长与权益', wallet: '我的钱包', 'team-orders': '团队进行中订单', team: '客户与团队',
+    growth: '成长与权益', wallet: '我的钱包', 'team-orders': '店铺进行中订单', team: '客户与团队',
     share: '分享店铺', landing: '分享落地页', training: '专属素材', content: '内容详情',
     rules: '经营规则', status: '状态详情', advisor: '专属顾问', operations: '经营数据',
   };
@@ -167,20 +175,15 @@
 
   function renderRegister() {
     const registration = state.registration || {
-      realName: '陈先生', phone: '138****6815', wechat: '', city: '上海市', storeName: '',
+      realName: '陈先生', phone: '13800006815', wechat: '', city: '上海市', storeName: '陈先生的回收店',
     };
-    const cityOptions = ['', '上海市', '杭州市', '南京市'].map((city) => {
-      const label = city || '请选择';
-      return `<option value="${city}" ${registration.city === city ? 'selected' : ''}>${label}</option>`;
-    }).join('');
     return `<section class="register-intro"><span class="section-label">最小登记</span><h2>开通我的回收店</h2><p>提交后由运营老师与你联系，不会提前创建店主身份或发放权益。</p></section>
       <form class="registration-form" id="registration-form">
-        <label><span>真实姓名</span><input name="realName" value="${escapeAttribute(registration.realName)}" required></label>
-        <label><span>手机号</span><div class="inline-input"><input name="phone" value="${escapeAttribute(registration.phone)}" readonly><button type="button" data-toast="手机号已经短信验证">已验证</button></div></label>
-        <label><span>微信号</span><input name="wechat" value="${escapeAttribute(registration.wechat)}" placeholder="用于运营老师联系" required></label>
-        <label><span>所在城市</span><select name="city" required>${cityOptions}</select></label>
-        <label><span>店铺名称 <small>选填</small></span><input name="storeName" value="${escapeAttribute(registration.storeName)}" placeholder="未填写将生成“昵称＋回收店”"></label>
-        <label class="agreement"><input type="checkbox" name="agreement" required ${state.registration ? 'checked' : ''}><span>我已阅读并同意《店主合作规则》</span></label>
+        <label><span>名称</span><input name="realName" value="${escapeAttribute(registration.realName)}" autocomplete="name" required></label>
+        <label><span>手机号</span><div class="inline-input"><input name="phone" value="${escapeAttribute(registration.phone)}" inputmode="tel" autocomplete="tel" required><em class="wechat-authorized-status">微信已授权</em></div><small class="form-field-help">已通过微信授权自动填充，可手动修改</small></label>
+        <label><span>微信号 <small>选填</small></span><input name="wechat" value="${escapeAttribute(registration.wechat)}" placeholder="用于运营老师联系"></label>
+        <label><span>所在城市</span><button class="city-picker-trigger" type="button" data-city-picker><span>${registration.city || '请选择省市'}</span><i>›</i></button><input type="hidden" name="city" value="${escapeAttribute(registration.city)}"></label>
+        <div class="agreement-row"><label class="agreement"><input type="checkbox" name="agreement" required ${state.registration ? 'checked' : ''}><span>我已阅读并同意</span></label><button class="agreement-link" type="button" data-cooperation-rules>《店主合作规范》</button></div>
         <button class="submit-button" type="submit">${state.registration ? '更新登记资料' : '提交登记'}</button>
       </form><p class="form-footnote">不收集身份证照片、银行卡、粉丝数量、经营计划或邀请码。</p>`;
   }
@@ -199,9 +202,8 @@
     return `<section class="store-hero"><div class="store-title"><div><span class="verified-badge">平台认证店主</span><h2>陈先生回收店</h2><p>${model.getIdentityView(state).identity}·LV${state.level} · ${state.status} · 数据更新于10:20</p></div><button type="button" data-page="share">分享店铺</button></div>
       <div class="scope-tabs">${['本月', '上月', '累计'].map((tab) => `<button type="button" class="${state.timeScope === tab ? 'active' : ''}" data-time-scope="${tab}">${tab}</button>`).join('')}</div>
       <div class="store-income"><span>${state.timeScope}已结算店铺收益</span><strong>${money(wallet.monthStoreIncome * scopeFactor)}</strong><small>实际结算数据，不含回收收入</small></div></section>
-      <section class="metric-grid store-metrics"><article><span>待结算业务收益<small class="current-metric-badge">当前</small></span><strong>${money(wallet.pendingBusiness)}</strong></article><article><span>待解锁拉新收益<small class="current-metric-badge">当前</small></span><strong>${money(wallet.lockedAcquisition)}</strong></article><article><span>有效订单</span><strong>${Math.round(14 * scopeFactor)}笔</strong></article><article><span>新增绑定客户</span><strong>${Math.round(8 * scopeFactor)}人</strong></article><article><span>团队有效订单</span><strong>${Math.round(9 * scopeFactor)}笔</strong></article><article><span>可见团队范围<small class="current-metric-badge">当前</small></span><strong>${model.getTeamVisibility(state.level).depth}级</strong></article></section>
-      <p class="metric-scope-note">时间筛选仅影响已结算收益、有效订单、新增客户和团队有效订单；标记“当前”的指标不随时间切换。</p>
-      <button class="order-summary-card" type="button" data-page="team-orders"><span><small>团队进行中订单</small><strong>${summary.total} 笔</strong></span><div>${['待取件', '待收货', '待质检', '待确认'].map((key) => `<em>${key}<b>${summary[key]}</b></em>`).join('')}</div><i>查看全部 →</i></button>
+      <section class="store-metric-panel"><div class="store-metric-heading"><span>收益状态</span><small>当前金额</small></div><div class="metric-finance-grid"><article><span>待结算店铺收益<small class="current-metric-badge">当前</small></span><strong>${money(wallet.pendingBusiness)}</strong><p>已产生，等待平台完成结算</p></article><article class="locked-income"><span>待解锁拉新收益<small class="current-metric-badge">当前</small><button class="metric-help-button" type="button" data-locked-income-help aria-label="查看拉新收益说明">!</button></span><strong>${money(wallet.lockedAcquisition)}</strong><p>达到拉新收益解锁条件后释放</p></article></div><div class="store-metric-heading operation"><span>${state.timeScope}经营数据</span><small>随时间筛选切换</small></div><div class="metric-operation-grid"><article><span>店铺订单</span><strong>${Math.round(14 * scopeFactor)}笔</strong></article><article><span>新增店铺客户</span><strong>${Math.round(8 * scopeFactor)}人</strong></article></div></section>
+      <button class="order-summary-card" type="button" data-page="team-orders"><span><small>店铺进行中订单</small><strong>${summary.total} 笔</strong></span><div>${['待取件', '待收货', '待质检', '待确认'].map((key) => `<em>${key}<b>${summary[key]}</b></em>`).join('')}</div><i>查看全部 →</i></button>
       <section class="section-card"><div class="section-card-head"><h3>经营工具</h3></div><div class="agent-grid store-tools"><button type="button" data-page="team"><i>团</i><span>客户与团队</span></button><button type="button" data-page="growth"><i>级</i><span>成长与权益</span></button><button type="button" data-page="wallet"><i>收</i><span>收益明细</span></button><button type="button" data-page="share"><i>享</i><span>分享店铺</span></button><button type="button" data-page="training"><i>材</i><span>专属素材</span></button><button type="button" data-page="rules"><i>规</i><span>规则说明</span></button></div></section>
       <button class="store-advisor-entry" type="button" data-page="advisor"><span class="advisor-avatar">顾</span><span><small>专属运营服务</small><strong>陈老师 · 店主运营顾问</strong><em>开店、经营与等级问题都可以联系我</em></span><b>查看微信码 →</b></button>`;
   }
@@ -238,7 +240,7 @@
     const rows = state.orderFilter === '全部' ? teamOrders : teamOrders.filter((row) => row.status === state.orderFilter);
     return `<section class="order-page-summary"><span>授权范围内进行中订单</span><strong>${summary.total}笔</strong><p>仅展示经营所需的脱敏信息，不展示完整手机号、地址和质检隐私资料。</p></section>
       <div class="filter-tabs">${['全部', '待取件', '待收货', '待质检', '待确认'].map((type) => `<button class="${state.orderFilter === type ? 'active' : ''}" type="button" data-order-filter="${type}">${type}${type === '全部' ? summary.total : summary[type]}</button>`).join('')}</div>
-      <section class="order-list">${rows.map((row) => `<article><div><span class="status-chip">${row.status}</span><strong>${row.category}</strong><small>${row.owner}</small></div><p><b>${row.id}</b><span>${row.updated}</span></p></article>`).join('')}</section>`;
+      <section class="order-list">${rows.map((row) => `<article><div><span class="status-chip">${row.status}</span><strong>${row.category}</strong><small>${row.owner}</small><em class="order-estimated-income"><small>预估收益</small><strong>${money(row.estimatedIncome)}</strong></em></div><p><b>${row.id}</b><span>${row.updated}</span></p></article>`).join('')}</section>`;
   }
 
   function renderTeam() {
@@ -247,7 +249,10 @@
     const rows = state.teamFilter === '团队数据' ? teamDataMembers : model.filterTeamMembers(allowed, state.teamFilter);
     const tabs = visibility.depth === 2 ? ['全部', '直属店主', '直属客户', '二级店主', '团队数据'] : ['全部', '直属店主', '直属客户'];
     const teamOverviewClass = visibility.depth === 2 ? 'team-overview extended' : 'team-overview';
-    const listContent = `<section class="section-card">${rows.map((member) => `<button class="person-row person-button" type="button" data-toast="已打开${member.name}的脱敏经营资料"><span class="person-avatar">${member.name[0]}</span><span class="person-copy"><strong>${member.name}<em class="member-kind">${member.kind}</em></strong><span>${member.meta}</span></span><b>${member.value}</b><i>›</i></button>`).join('')}</section>`;
+    const listContent = `<section class="section-card">${rows.map((member) => {
+      const canPromoteCustomer = state.level >= 11 && member.kind === '直属客户';
+      return `<article class="person-row"><span class="person-avatar">${member.name[0]}</span><span class="person-copy"><strong>${member.name}<em class="member-kind">${member.kind}</em></strong><span>${member.meta}</span></span><span class="person-row-actions"><b>${member.value}</b>${canPromoteCustomer ? `<button class="promote-owner-button" type="button" data-toast="${member.name}已发起店主升级">升级为店主</button>` : ''}</span></article>`;
+    }).join('')}</section>`;
     return `<section class="team-contribution"><div><div><span>下一级升级贡献</span><strong>团队店主 9 / 20</strong></div><b>45%</b></div><div class="progress-track"><i style="width:45%"></i></div><p>团队店主是当前最慢指标，还差 11 位直属店主达到升级条件。</p></section>
       <section class="${teamOverviewClass}"><div><span>有效订单</span><strong>14</strong><small>本月授权范围</small></div><div><span>直属客户</span><b>26</b><small>已完成绑定</small></div><div><span>直属店主</span><b>8</b><small>${visibility.depth}级可见范围</small></div>${visibility.depth === 2 ? '<div><span>团队数量</span><b>42</b><small>一级＋二级店主</small></div>' : ''}</section>
       <div class="filter-tabs team-tabs">${tabs.map((type) => `<button class="${state.teamFilter === type ? 'active' : ''}" type="button" data-team-filter="${type}">${type}</button>`).join('')}</div>
@@ -300,7 +305,7 @@
   }
 
   function renderRules() {
-    return `<section class="rules-page"><h2>经营规则说明</h2><article><b>店铺定位</b><p>平台负责回收、物流、质检、售后和结算；店主负责客户触达、内容传播与关系经营。</p></article><article><b>客户归因</b><p>已绑定客户不会因点击其他店铺链接改变归属。</p></article><article><b>收益边界</b><p>店铺收益不等于平台成交额；回收收入和拉新收益不计入店主升级指标。</p></article></section>`;
+    return `<section class="rules-page"><h2>经营规则说明</h2><article><b>店铺定位</b><p>平台负责回收、物流、质检、售后和结算；店主负责客户触达、内容传播与关系经营。</p></article><article><b>客户归因</b><p>已绑定客户不会因点击其他店铺链接改变归属。</p></article><article><b>收益边界</b><p>店铺收益不等于平台成交额；回收收入和拉新收益不计入店主升级指标。</p></article><article class="same-rate-rule"><div class="rule-card-heading"><span>重点规则</span><b>同档店铺收益规则</b></div><p>店铺收益比例由店铺档位和订单生效规则决定。直属上下级存在比例差时，上级店铺可按规则获得收益；比例相同时不产生上级店铺收益。</p><div class="rule-table"><span>例如：店铺档位收益对照</span><table aria-label="同档店铺收益示例"><thead><tr><th>收益结果</th><th>你的店铺档位</th><th>直属店铺档位</th><th>店铺收益比例</th></tr></thead><tbody><tr class="rule-earned"><td><strong>成功获得收益</strong></td><td>星享店主<small>示例20%</small></td><td>轻享店主<small>示例15%</small></td><td><b>示例5%</b><small>存在比例差</small></td></tr><tr class="rule-not-earned"><td><strong>未获得收益</strong></td><td>轻享店主<small>示例15%</small></td><td>轻享店主<small>示例15%</small></td><td><b>0%</b><small>比例相同</small></td></tr></tbody></table></div><div class="rule-result-note"><strong>规则说明</strong><p>直属店主及其店铺客户产生的订单仍归实际经营店铺；上级店铺仅在存在有效比例差时获得店铺收益。</p></div><small>以上档位和比例仅用于说明计算方式，不代表最终比例；实际以订单生效时的店铺收益规则为准。</small></article></section>`;
   }
 
   function renderStatus() {
@@ -343,6 +348,40 @@
       }).join('')
       : '<p class="modal-rule-note">达到 LV12 资格后，请联系专属顾问完成线下审核。</p>';
     modal.innerHTML = `<div class="upgrade-modal detail-modal" role="dialog" aria-modal="true" aria-labelledby="upgrade-conditions-title"><button class="modal-close" type="button" data-close-modal aria-label="关闭">×</button><span class="modal-kicker">升级条件</span><h2 id="upgrade-conditions-title">LV${level} 升级条件</h2><p>${rule.relation === 'all' ? '以下指标需全部满足，结算数据以当前规则版本为准。' : '该等级需要完成线下资格审核。'}</p><div class="modal-condition-list">${conditionRows}</div>${newBenefits.length ? `<div class="modal-new-benefits"><strong>达标后新增权益</strong>${newBenefits.map((item) => `<span>${item.name}</span>`).join('')}</div>` : ''}<button type="button" data-close-modal>我知道了</button></div>`;
+    modal.hidden = false;
+  }
+
+  function renderLockedIncomeHelpModal() {
+    modal.innerHTML = `<div class="upgrade-modal detail-modal income-help-modal" role="dialog" aria-modal="true" aria-labelledby="locked-income-help-title"><button class="modal-close" type="button" data-close-modal aria-label="关闭">×</button><span class="modal-kicker">收益说明</span><h2 id="locked-income-help-title">待解锁拉新收益</h2><p>这笔金额已经记录，但尚未达到拉新收益解锁条件。</p><div class="income-flow-steps"><article><i>1</i><div><strong>收益形成</strong><span>完成符合规则的拉新后，金额先计入待解锁拉新收益。</span></div></article><article><i>2</i><div><strong>解锁后</strong><span>满足解锁条件后，金额转入待结算店铺收益。</span></div></article><article><i>3</i><div><strong>结算后</strong><span>平台完成结算后，金额进入可提现余额。</span></div></article></div><button type="button" data-close-modal>我知道了</button></div>`;
+    modal.hidden = false;
+  }
+
+  function renderCityPickerSheet() {
+    const cities = cityCatalog[state.cityPickerProvince];
+    modal.innerHTML = `<div class="city-picker-sheet" role="dialog" aria-modal="true" aria-labelledby="city-picker-title"><div class="city-picker-head"><button type="button" data-close-modal>取消</button><strong id="city-picker-title">选择所在城市</strong><button type="button" data-city-confirm>确认</button></div><p>先选择省份，再选择城市</p><div class="city-picker-columns"><section><span>省份</span><div>${Object.keys(cityCatalog).map((province) => `<button class="${state.cityPickerProvince === province ? 'active' : ''}" type="button" data-city-province="${province}">${province}</button>`).join('')}</div></section><section><span>城市</span><div>${cities.map((city) => `<button class="${state.cityPickerCity === city ? 'active' : ''}" type="button" data-city-option="${city}">${city}</button>`).join('')}</div></section></div></div>`;
+    modal.hidden = false;
+  }
+
+  function renderCityPickerModal() {
+    const currentCity = document.querySelector('#registration-form [name="city"]')?.value || '上海市';
+    const matchedProvince = Object.keys(cityCatalog).find((province) => cityCatalog[province].includes(currentCity)) || '上海市';
+    state.cityPickerProvince = matchedProvince;
+    state.cityPickerCity = currentCity;
+    renderCityPickerSheet();
+  }
+
+  function renderCooperationRulesModal() {
+    const rules = [
+      ['合作定位', '平台负责回收服务、物流、质检、售后与结算；店主负责合规分享、客户触达和关系维护，不代表平台作出价格或收益承诺。'],
+      ['店铺名称', '店铺名称默认按“名称＋的回收店”生成。为保障合规与识别清晰，平台可要求调整不适宜或易引起误解的名称。'],
+      ['客户归属', '客户归属以平台有效绑定记录为准；已绑定客户不会因点击其他店铺链接改变归属，禁止诱导改绑或虚构客户关系。'],
+      ['收益与结算', '店铺收益按届时有效的等级、档位与结算规则计算，不构成固定收益承诺；退款、取消、异常或同档无差额场景可能不产生店铺收益。'],
+      ['内容与行为规范', '分享内容应真实、清晰，不得夸大回收价格、承诺保底收益、冒用平台名义或发布违法违规及侵犯他人权益的信息。'],
+      ['隐私保护', '仅可在经营所需范围内使用客户信息，不得索取身份证、银行卡等无关资料，不得泄露、出售或用于回收服务以外的用途。'],
+      ['状态与退出', '休眠、冻结、终止或退出状态将按规则影响新增绑定、店铺收益、分享链接和升级资格；历史收益依有效结算结果处理。'],
+      ['规则生效', '勾选并提交即表示已阅读并同意本规范。规则更新后将通过页面提示；涉及重大权益变化时，以更新后的公示内容和生效时间为准。'],
+    ];
+    modal.innerHTML = `<div class="upgrade-modal detail-modal cooperation-rules-modal" role="dialog" aria-modal="true" aria-labelledby="cooperation-rules-title"><button class="modal-close" type="button" data-close-modal aria-label="关闭">×</button><span class="modal-kicker">开店前请阅读</span><h2 id="cooperation-rules-title">店主合作规范</h2><p>本规范用于明确回收店主与平台之间的经营边界，不构成固定收益或回收价格承诺。</p><div class="cooperation-rule-list">${rules.map(([title, description], index) => `<article><i>${index + 1}</i><div><strong>${title}</strong><span>${description}</span></div></article>`).join('')}</div><button type="button" data-close-modal>我已了解</button></div>`;
     modal.hidden = false;
   }
 
@@ -456,7 +495,28 @@
     if (benefitHelpButton) renderBenefitHelpModal(Number(benefitHelpButton.dataset.benefitHelp));
     const upgradeConditionsButton = event.target.closest('[data-upgrade-conditions]');
     if (upgradeConditionsButton) renderUpgradeConditionsModal(Number(upgradeConditionsButton.dataset.upgradeConditions));
+    if (event.target.closest('[data-locked-income-help]')) renderLockedIncomeHelpModal();
     if (event.target.closest('[data-level-roadmap]')) renderLevelRoadmapModal();
+    if (event.target.closest('[data-city-picker]')) renderCityPickerModal();
+    const provinceButton = event.target.closest('[data-city-province]');
+    if (provinceButton) {
+      state.cityPickerProvince = provinceButton.dataset.cityProvince;
+      state.cityPickerCity = cityCatalog[state.cityPickerProvince][0];
+      renderCityPickerSheet();
+    }
+    const cityButton = event.target.closest('[data-city-option]');
+    if (cityButton) {
+      state.cityPickerCity = cityButton.dataset.cityOption;
+      renderCityPickerSheet();
+    }
+    if (event.target.closest('[data-city-confirm]')) {
+      const cityInput = document.querySelector('#registration-form [name="city"]');
+      const cityTrigger = document.querySelector('[data-city-picker] span');
+      if (cityInput) cityInput.value = state.cityPickerCity;
+      if (cityTrigger) cityTrigger.textContent = state.cityPickerProvince === state.cityPickerCity ? state.cityPickerCity : `${state.cityPickerProvince} ${state.cityPickerCity}`;
+      modal.hidden = true;
+    }
+    if (event.target.closest('[data-cooperation-rules]')) renderCooperationRulesModal();
     const toastButton = event.target.closest('[data-toast]');
     if (toastButton) showToast(toastButton.dataset.toast);
     if (event.target.closest('[data-close-modal]')) modal.hidden = true;

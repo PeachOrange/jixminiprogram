@@ -206,13 +206,14 @@
   }
 
   function upsertRegistration(existing, input) {
+    const realName = String(input.realName || '').trim();
     const record = {
       ...(existing || {}),
-      realName: String(input.realName || '').trim(),
+      realName,
       phone: String(input.phone || '').trim(),
       wechat: String(input.wechat || '').trim(),
       city: String(input.city || '').trim(),
-      storeName: String(input.storeName || '').trim(),
+      storeName: realName ? `${realName}的回收店` : '',
     };
     return { record, updated: Boolean(existing) };
   }

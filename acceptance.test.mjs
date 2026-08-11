@@ -126,6 +126,26 @@ test('团队进行中订单总数等于四种状态之和', () => {
   assert.deepEqual(summary, { total: 5, 待取件: 2, 待收货: 1, 待质检: 1, 待确认: 1 });
 });
 
+test('店铺进行中订单主信息区右侧突出展示每笔预估收益', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const orderData = sourceSection(source, 'const teamOrders = [', 'const teamDataMembers = [');
+  const orderPage = sourceSection(source, 'function renderTeamOrders()', 'function renderTeam()');
+  assert.equal((orderData.match(/estimatedIncome:/g) || []).length, 5, '每条进行中订单都应提供预估收益');
+  for (const marker of ['预估收益', 'order-estimated-income', 'money(row.estimatedIncome)']) {
+    assert.ok(orderPage.includes(marker), `订单列表缺少预估收益展示：${marker}`);
+  }
+  assert.match(
+    orderPage,
+    /<article><div>.*<em class="order-estimated-income">.*<\/em><\/div><p><b>.*<\/b><span>.*<\/span><\/p><\/article>/,
+    '预估收益应位于订单主信息区右侧，底部仅保留订单编号和更新时间',
+  );
+  assert.ok(styles.includes('.order-estimated-income'), '缺少预估收益金额样式');
+  assert.match(styles, /\.order-list article\s*>\s*div\s*\{[^}]*grid-template-columns:\s*auto 1fr auto;/, '订单主信息区需要为收益预留右侧列');
+  assert.match(styles, /\.order-estimated-income\s*\{[^}]*grid-column:\s*3;[^}]*grid-row:\s*1\s*\/\s*3;/, '预估收益需要固定在主信息区右侧');
+  assert.match(styles, /\.order-estimated-income strong\s*\{[^}]*color:\s*var\(--coral\);[^}]*font-size:\s*13px;/, '预估收益金额需要使用醒目颜色并放大');
+});
+
 test('团队可见范围按店主等级区分一级和二级', () => {
   const model = miniModel();
   assert.equal(typeof model.getTeamVisibility, 'function');
@@ -162,16 +182,18 @@ test('小程序登记首次创建并在重复提交时更新同一记录', () =>
   const model = miniModel();
   assert.equal(typeof model.upsertRegistration, 'function');
   const first = model.upsertRegistration(null, {
-    realName: '陈先生', phone: '138****6815', wechat: 'chen-one', city: '上海市', storeName: '',
+    realName: '陈先生', phone: '138****6815', wechat: '', city: '上海市', storeName: '不应采用的店名',
   });
   const second = model.upsertRegistration(first.record, {
-    realName: '陈先生', phone: '138****6815', wechat: 'chen-two', city: '杭州市', storeName: '陈先生回收店',
+    realName: '陈老师', phone: '13900006815', wechat: 'chen-two', city: '杭州市', storeName: '另一个店名',
   });
   assert.equal(first.updated, false);
   assert.equal(second.updated, true);
   assert.equal(second.record.wechat, 'chen-two');
+  assert.equal(second.record.phone, '13900006815');
   assert.equal(second.record.city, '杭州市');
-  assert.equal(second.record.storeName, '陈先生回收店');
+  assert.equal(first.record.storeName, '陈先生的回收店');
+  assert.equal(second.record.storeName, '陈老师的回收店');
 });
 
 test('小程序登记页回显已有记录并区分资料更新结果', () => {
@@ -188,9 +210,78 @@ test('小程序登记页回显已有记录并区分资料更新结果', () => {
 
 test('小程序覆盖登记、我的回收店、统一钱包和分享页面', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
-  for (const marker of ['开通我的回收店', '真实姓名', '运营老师微信码', '我的回收店', '可提现余额', '团队进行中订单', '店铺专属海报', '分享落地页']) {
+  for (const marker of ['开通我的回收店', '<span>名称</span>', '运营老师微信码', '我的回收店', '可提现余额', '店铺进行中订单', '店铺专属海报', '分享落地页']) {
     assert.ok(source.includes(marker), `缺少页面标识：${marker}`);
   }
+});
+
+test('开店登记使用名称、可编辑授权手机号和选填微信号且不展示店名预览', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const register = sourceSection(source, 'function renderRegister()', 'function renderRegisterSuccess()');
+  for (const marker of [
+    '<span>名称</span>',
+    '微信号 <small>选填</small>',
+    '微信已授权',
+    '已通过微信授权自动填充，可手动修改',
+  ]) {
+    assert.ok(register.includes(marker), `登记表单缺少：${marker}`);
+  }
+  assert.equal(register.includes('真实姓名'), false, '登记表单不应继续展示真实姓名');
+  assert.equal(register.includes('readonly'), false, '手机号必须允许手动修改');
+  assert.equal(register.includes('name="storeName"'), false, '不应保留店铺名称输入框');
+  assert.equal(register.includes('store-name-preview'), false, '不应展示自动店名预览卡片');
+  assert.equal(source.includes('data-store-name-preview'), false, '不应保留店名预览事件目标');
+  assert.equal(register.includes('name="wechat" value="${escapeAttribute(registration.wechat)}" placeholder="用于运营老师联系" required'), false, '微信号不应必填');
+  assert.equal(styles.includes('.store-name-preview'), false, '不应保留自动店名预览样式');
+  assert.ok(styles.includes('.wechat-authorized-status'), '缺少微信授权状态样式');
+});
+
+test('开店登记提供底部省市选择器和店主合作规范弹窗', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const register = sourceSection(source, 'function renderRegister()', 'function renderRegisterSuccess()');
+  for (const marker of ['data-city-picker', 'name="city"', 'data-cooperation-rules', '《店主合作规范》']) {
+    assert.ok(register.includes(marker), `登记入口缺少：${marker}`);
+  }
+  assert.equal(register.includes('<select name="city"'), false, '城市不应继续使用原生下拉框');
+  for (const marker of [
+    'function renderCityPickerModal',
+    'data-city-province',
+    'data-city-option',
+    'data-city-confirm',
+    'function renderCooperationRulesModal',
+    '合作定位',
+    '客户归属',
+    '收益与结算',
+    '内容与行为规范',
+    '隐私保护',
+    '状态与退出',
+    '规则生效',
+  ]) {
+    assert.ok(source.includes(marker), `登记弹层缺少：${marker}`);
+  }
+  for (const marker of ['.city-picker-sheet', '.city-picker-columns', '.agreement-link', '.cooperation-rule-list']) {
+    assert.ok(styles.includes(marker), `登记弹层缺少样式：${marker}`);
+  }
+});
+
+test('同档店铺收益规则用档位表格对照有收益和无收益场景', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const rules = sourceSection(source, 'function renderRules()', 'function renderStatus()');
+  for (const marker of [
+    'same-rate-rule', '同档店铺收益规则', '例如：店铺档位收益对照',
+    '<table', '<thead>', '<tbody>', '收益结果', '你的店铺档位', '直属店铺档位', '店铺收益比例',
+    '成功获得收益', '未获得收益', '星享店主', '轻享店主', '示例20%', '示例15%', '示例5%', '0%',
+    '存在比例差', '比例相同', '仅用于说明计算方式', '实际以订单生效时的店铺收益规则为准',
+  ]) {
+    assert.ok(rules.includes(marker), `同档店铺收益规则缺少说明：${marker}`);
+  }
+  for (const marker of ['.same-rate-rule', '.rule-table', '.rule-earned', '.rule-not-earned', '.rule-result-note']) {
+    assert.ok(styles.includes(marker), `同档店铺收益规则缺少表格样式：${marker}`);
+  }
+  assert.equal(rules.includes('均为15%'), false, '不得把示例15%写成所有轻享店主的固定比例');
 });
 
 test('店主首屏收益摘要仅展示两项数据且整块跳转我的回收店', () => {
@@ -290,16 +381,48 @@ test('我的回收店区分分享店铺与专属素材并提供客服入口', ()
   assert.ok(store.includes('查看微信码'));
 });
 
-test('回收店明确区分时间指标和当前状态指标', () => {
+test('回收店以四项分层指标展示经营数据并解释拉新收益去向', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const styles = readFileSync(`${root}/styles.css`, 'utf8');
   const store = sourceSection(source, 'function renderStore()', 'function renderGrowth()');
-  for (const marker of ['current-metric-badge', 'metric-scope-note', '不随时间切换']) {
+  for (const marker of [
+    'store-metric-panel', 'metric-finance-grid', 'metric-help-button', 'metric-operation-grid',
+    '待结算店铺收益', '待解锁拉新收益', '店铺订单', '新增店铺客户',
+  ]) {
     assert.ok(store.includes(marker), `回收店口径缺少：${marker}`);
   }
-  assert.equal((store.match(/current-metric-badge/g) || []).length, 3);
-  assert.ok(styles.includes('.current-metric-badge'));
-  assert.ok(styles.includes('.metric-scope-note'));
+  assert.equal((store.match(/<article/g) || []).length, 4, '经营指标应收敛为四张卡片');
+  for (const marker of ['income-flow-note', '待结算业务收益', '<span>有效订单', '团队有效订单', '新增绑定客户', '可见团队范围', '可见团队等级']) {
+    assert.equal(store.includes(marker), false, `回收店仍保留旧指标：${marker}`);
+  }
+  for (const marker of ['.store-metric-panel', '.metric-finance-grid', '.metric-help-button', '.metric-operation-grid']) {
+    assert.ok(styles.includes(marker), `回收店分层排版缺少：${marker}`);
+  }
+  assert.equal(styles.includes('.income-flow-note'), false, '不应保留独立拉新收益说明样式');
+});
+
+test('拉新收益说明通过卡片感叹号打开弹窗', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const store = sourceSection(source, 'function renderStore()', 'function renderGrowth()');
+  const helpModal = sourceSection(source, 'function renderLockedIncomeHelpModal()', 'function renderLevelRoadmapModal()');
+  for (const marker of ['data-locked-income-help', 'aria-label="查看拉新收益说明"']) {
+    assert.ok(store.includes(marker), `拉新收益卡片缺少说明入口：${marker}`);
+  }
+  for (const marker of ['待解锁拉新收益', '收益形成', '解锁后', '结算后', '转入待结算店铺收益', '进入可提现余额']) {
+    assert.ok(helpModal.includes(marker), `拉新收益弹窗缺少：${marker}`);
+  }
+  assert.ok(source.includes("event.target.closest('[data-locked-income-help]')"), '感叹号没有绑定弹窗事件');
+  assert.ok(source.includes('renderLockedIncomeHelpModal();'), '感叹号没有打开说明弹窗');
+  assert.ok(styles.includes('.income-flow-steps'), '缺少拉新收益弹窗步骤样式');
+});
+
+test('店铺进行中订单统一入口与页面标题命名', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const store = sourceSection(source, 'function renderStore()', 'function renderGrowth()');
+  assert.ok(store.includes('店铺进行中订单'));
+  assert.ok(source.includes("'team-orders': '店铺进行中订单'"));
+  assert.equal(store.includes('团队进行中订单'), false);
 });
 
 test('成长权益展示真实指标进度与横向权益卡片', () => {
@@ -365,9 +488,11 @@ test('成长权益轮播末尾保留锁定尾卡但不展示全部等级按钮',
 test('客户与团队恢复升级贡献、三栏概览和脱敏成员行', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const team = sourceSection(source, 'function renderTeam()', 'function renderShare()');
-  for (const marker of ['team-contribution', '团队店主', 'team-overview', 'team-tabs', 'person-row', 'person-button']) {
+  for (const marker of ['team-contribution', '团队店主', 'team-overview', 'team-tabs', 'person-row']) {
     assert.ok(team.includes(marker), `客户与团队缺少结构：${marker}`);
   }
+  assert.equal(team.includes('person-button'), false, '成员行不应保留整行跳转按钮');
+  assert.equal(team.includes('<i>›</i>'), false, '成员行不应展示跳转箭头');
 });
 
 test('LV11和LV12团队概览增加团队数量数据块', () => {
@@ -384,13 +509,30 @@ test('LV11和LV12提供团队数据筛选并复用成员列表', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const styles = readFileSync(`${root}/styles.css`, 'utf8');
   const team = sourceSection(source, 'function renderTeam()', 'function renderShare()');
-  for (const marker of ['二级店主', '团队数据', "state.teamFilter === '团队数据'", 'person-row', 'person-button']) {
+  for (const marker of ['二级店主', '团队数据', "state.teamFilter === '团队数据'", 'person-row']) {
     assert.ok(team.includes(marker), `高等级团队数据缺少：${marker}`);
   }
   assert.ok(source.includes('const teamDataMembers = ['), '缺少团队成员示例数据');
   assert.ok(!team.includes('team-order-list'), '团队数据不应使用订单列表结构');
   assert.ok(!source.includes('const teamOrderRows = ['), '不应保留团队订单示例数据');
   assert.ok(!styles.includes('.team-order-card'), '不应保留团队订单卡片样式');
+});
+
+test('LV11和LV12仅允许将团队客户升级为店主', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const team = sourceSection(source, 'function renderTeam()', 'function renderShare()');
+  for (const marker of [
+    'state.level >= 11',
+    "member.kind === '直属客户'",
+    'promote-owner-button',
+    '升级为店主',
+    '已发起店主升级',
+  ]) {
+    assert.ok(team.includes(marker), `客户升级店主操作缺少：${marker}`);
+  }
+  assert.ok(styles.includes('.person-row-actions'), '缺少成员行右侧操作区样式');
+  assert.ok(styles.includes('.promote-owner-button'), '缺少升级为店主按钮样式');
 });
 
 test('专属素材为发圈、视频和学习资料使用不同展示结构', () => {
