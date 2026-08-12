@@ -132,15 +132,6 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .mini-wallet strong { margin: 8px 0 4px; font-size: 17px; }
 .mini-wallet small { min-height: 23px; color: rgba(255,255,255,.7); font-size: 7px; line-height: 1.5; }
 .mini-wallet i { margin-top: 7px; color: var(--lime); font-size: 7px; font-style: normal; }
-.earnings-shell { display: block; width: 100%; margin: 0 0 10px; padding: 13px; border: 1px solid #dfe5df; border-radius: 18px; color: inherit; background: #fff; cursor: pointer; text-align: left; }
-.earnings-head { display: flex; align-items: end; justify-content: space-between; margin-bottom: 9px; }
-.earnings-head span { color: var(--teal); font-size: 7px; font-weight: 800; letter-spacing: .1em; }
-.earnings-head h3 { margin: 2px 0 0; font-size: 13px; }
-.store-earnings-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.store-earnings-metrics div { padding: 10px; border-radius: 12px; background: #f3f7f4; }
-.store-earnings-metrics span, .store-earnings-metrics b { display: block; }
-.store-earnings-metrics span { color: var(--muted); font-size: 7px; }
-.store-earnings-metrics b { margin-top: 4px; color: var(--navy); font-size: 14px; }
 .recycle-account-strip { display: flex; width: 100%; align-items: center; gap: 8px; margin-top: 8px; padding: 10px; border: 1px solid #dce8e2; border-radius: 14px; color: #235e55; background: #eff7f3; cursor: pointer; text-align: left; }
 .recycle-account-strip > i { display: grid; width: 29px; height: 29px; flex: none; place-items: center; border-radius: 9px; color: #fff; background: var(--teal); font-style: normal; font-size: 9px; }
 .recycle-account-strip > span { min-width: 0; flex: 1; }

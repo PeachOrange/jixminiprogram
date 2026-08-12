@@ -161,12 +161,6 @@
     return `<button class="store-entry-card mine-store-hero opening" type="button" data-page="register"><span class="store-entry-mark">店</span><span><small>回收店服务</small><strong>开通我的回收店</strong><em>登记成为回收店主，解锁经营、成长与分享能力</em></span><b>立即登记开店 →</b></button>`;
   }
 
-  function renderWalletPreview() {
-    const wallet = model.getWalletSummary();
-    return `<button class="earnings-shell unified-wallet" type="button" data-page="store" aria-label="查看我的回收店收益"><div class="earnings-head"><div><span>我的回收店</span><h3>经营收益</h3></div></div>
-      <div class="store-earnings-metrics"><div><span>本月店铺收益</span><b>${money(wallet.monthStoreIncome)}</b></div><div><span>待解锁拉新收益</span><b>${money(wallet.lockedAcquisition)}</b></div></div></button>`;
-  }
-
   function renderMine() {
     const identity = model.getIdentityView(state);
     const profile = identity.showStoreArea ? renderProfile(identity) : renderOrdinaryProfile();
@@ -175,7 +169,6 @@
       : renderOrdinaryStoreEntry();
     return `${profile}${storeEntry}
       ${renderMineServicePanels()}
-      ${identity.showStoreArea ? renderWalletPreview() : ''}
       ${renderMineWallet()}
       ${renderCommonFeatures()}`;
   }

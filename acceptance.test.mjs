@@ -333,24 +333,15 @@ test('我的钱包二级页仅提示复用既有页面', () => {
   assert.ok(styles.includes('.wallet-reuse-note'), '缺少钱包复用说明居中样式');
 });
 
-test('店主首屏收益摘要仅展示两项数据且整块跳转我的回收店', () => {
-  const source = readFileSync(`${root}/app.js`, 'utf8');
-  const preview = sourceSection(source, 'function renderWalletPreview()', 'function renderMine()');
-  for (const marker of ['本月店铺收益', '待解锁拉新收益', 'data-page="store"']) {
-    assert.ok(preview.includes(marker), `收益摘要缺少：${marker}`);
-  }
-  for (const marker of ['可提现余额', '待结算业务收益', '查看明细', '去提现', 'data-page="wallet"']) {
-    assert.equal(preview.includes(marker), false, `收益摘要不应包含：${marker}`);
-  }
-});
-
-test('店主首屏先展示我的回收店入口再展示收益摘要', () => {
+test('店主我的页不再展示经营收益摘要卡片', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const mine = sourceSection(source, 'function renderMine()', 'function renderRegister()');
-  assert.ok(mine.indexOf('store-entry-card') < mine.indexOf('renderWalletPreview()'));
+  assert.equal(source.includes('function renderWalletPreview()'), false, '不应保留经营收益摘要组件');
+  assert.equal(mine.includes('renderWalletPreview()'), false, '店主我的页不应渲染经营收益摘要');
+  assert.equal(mine.includes('查看我的回收店收益'), false, '店主我的页不应保留收益摘要入口');
 });
 
-test('店主我的页依次展示回收店、首页三板块、经营收益、我的钱包和常用功能', () => {
+test('店主我的页依次展示回收店、首页三板块、我的钱包和常用功能', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const mine = sourceSection(source, 'function renderMine()', 'function renderRegister()');
   const servicePanels = sourceSection(source, 'function renderMineServicePanels()', 'function renderMineWallet()');
@@ -359,7 +350,7 @@ test('店主我的页依次展示回收店、首页三板块、经营收益、�
   for (const marker of ['我的评估', '我的订单', '评估师']) assert.ok(servicePanels.includes(marker), `缺少首页同款板块：${marker}`);
   assert.ok(wallet.includes('我的钱包'));
   assert.ok(common.includes('常用功能'));
-  const ordered = ['store-entry-card', 'renderMineServicePanels()', 'renderWalletPreview()', 'renderMineWallet()', 'renderCommonFeatures()'];
+  const ordered = ['store-entry-card', 'renderMineServicePanels()', 'renderMineWallet()', 'renderCommonFeatures()'];
   ordered.reduce((previous, marker) => {
     const current = mine.indexOf(marker);
     assert.ok(current > previous, `我的页模块顺序错误：${marker}`);
@@ -369,7 +360,7 @@ test('店主我的页依次展示回收店、首页三板块、经营收益、�
 
 test('普通用户使用开店入口且不展示经营收益', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
-  const entry = sourceSection(source, 'function renderOrdinaryStoreEntry()', 'function renderWalletPreview()');
+  const entry = sourceSection(source, 'function renderOrdinaryStoreEntry()', 'function renderMine()');
   for (const marker of ['开通我的回收店', 'data-page="register"']) assert.ok(entry.includes(marker), `普通用户开店入口缺少：${marker}`);
   assert.equal(source.includes('function renderOrdinaryEarnings()'), false, '普通用户不应保留经营收益组件');
   const mine = sourceSection(source, 'function renderMine()', 'function renderRegister()');
