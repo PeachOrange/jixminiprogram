@@ -539,10 +539,13 @@ test('成长权益轮播末尾保留锁定尾卡但不展示全部等级按钮',
   }
 });
 
-test('客户与团队恢复升级贡献、三栏概览和脱敏成员行', () => {
+test('客户与团队隐藏升级贡献并保留概览和脱敏成员行', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const team = sourceSection(source, 'function renderTeam()', 'function renderShare()');
-  for (const marker of ['team-contribution', '团队店主', 'team-overview', 'team-tabs', 'person-row']) {
+  for (const marker of ['team-contribution', '下一级升级贡献', '团队店主是当前最慢指标']) {
+    assert.equal(team.includes(marker), false, `客户与团队仍展示升级贡献：${marker}`);
+  }
+  for (const marker of ['team-overview', 'team-tabs', 'person-row']) {
     assert.ok(team.includes(marker), `客户与团队缺少结构：${marker}`);
   }
   assert.equal(team.includes('person-button'), false, '成员行不应保留整行跳转按钮');
@@ -559,17 +562,38 @@ test('LV11和LV12团队概览增加团队数量数据块', () => {
   assert.ok(styles.includes('.team-overview.extended'), '缺少四栏团队概览样式');
 });
 
-test('LV11和LV12提供团队数据筛选并复用成员列表', () => {
+test('LV11和LV12隐藏二级店主筛选并保留团队数据列表', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const styles = readFileSync(`${root}/styles.css`, 'utf8');
   const team = sourceSection(source, 'function renderTeam()', 'function renderShare()');
-  for (const marker of ['二级店主', '团队数据', "state.teamFilter === '团队数据'", 'person-row']) {
+  for (const marker of ['团队数据', "state.teamFilter === '团队数据'", 'person-row']) {
     assert.ok(team.includes(marker), `高等级团队数据缺少：${marker}`);
   }
+  assert.equal(team.includes("'二级店主'"), false, '高等级筛选不应展示二级店主');
+  assert.ok(team.includes("['全部', '直属店主', '直属客户', '团队数据']"), '高等级筛选项顺序不正确');
   assert.ok(source.includes('const teamDataMembers = ['), '缺少团队成员示例数据');
   assert.ok(!team.includes('team-order-list'), '团队数据不应使用订单列表结构');
   assert.ok(!source.includes('const teamOrderRows = ['), '不应保留团队订单示例数据');
   assert.ok(!styles.includes('.team-order-card'), '不应保留团队订单卡片样式');
+});
+
+test('客户与团队仅使用直属店主直属客户和团队客户三种关系名称', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const orderData = sourceSection(source, 'const teamOrders = [', 'const teamDataMembers = [');
+  const teamData = sourceSection(source, 'const teamDataMembers = [', 'const trainingContent = {');
+  for (const marker of ["kind: '一级团队'", "kind: '二级团队'", "kind: '二级店主'"]) {
+    assert.equal(teamData.includes(marker), false, `团队成员仍使用旧关系名称：${marker}`);
+  }
+  assert.ok(teamData.includes("kind: '团队客户'"), '团队成员缺少“团队客户”关系名称');
+  assert.equal(teamData.includes('绑定于2026-06-18'), false, '直属客户不应展示绑定日期');
+  assert.equal(teamData.includes('手机号尾号 6815'), false, '直属客户不应展示真实手机尾号');
+  assert.equal((teamData.match(/meta: '手机尾号 xxxx'/g) || []).length, 2, '直属客户描述应统一为“手机尾号 xxxx”');
+  for (const marker of ['一级团队', '二级团队', '本人经营']) {
+    assert.equal(orderData.includes(marker), false, `订单归属仍使用旧客户类型：${marker}`);
+  }
+  for (const marker of ['直属客户 ·', '直属店主 ·', '团队客户 ·']) {
+    assert.ok(orderData.includes(marker), `订单归属缺少客户类型：${marker}`);
+  }
 });
 
 test('LV11和LV12仅允许将团队客户升级为店主', () => {

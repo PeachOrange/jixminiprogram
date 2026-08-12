@@ -38,32 +38,32 @@
     { type: '回收收入', title: '本人闲置回收到账', detail: '旧衣鞋包 · 已入账', value: '+128.60', icon: '回' },
     { type: '自营业务收益', title: '自营业务收益', detail: '订单 XJ08060218 · 已结算', calculation: '计收益基数 ¥500 × 15% = ¥75', rule: '轻享店主·LV4 · 规则版本 V1.2', value: '+75.00', icon: '营' },
     { type: '直属客户收益', title: '直属客户收益', detail: '客户尾号 6815 · 已结算', calculation: '计收益基数 ¥420 × 10% = ¥42', rule: '轻享店主·LV4 · 规则版本 V1.2', value: '+42.00', icon: '客' },
-    { type: '团队收益', title: '一级团队收益', detail: '团队订单 · 已结算', calculation: '计收益基数 ¥600 × 6% = ¥36', rule: '轻享店主·LV4 · 规则版本 V1.2', value: '+36.00', icon: '团' },
+    { type: '团队收益', title: '团队收益', detail: '团队订单 · 已结算', calculation: '计收益基数 ¥600 × 6% = ¥36', rule: '轻享店主·LV4 · 规则版本 V1.2', value: '+36.00', icon: '团' },
     { type: '拉新收益', title: '新客户首单奖励', detail: '观察期剩2天 · 不计入升级', value: '待解锁', icon: '新', pending: true },
   ];
 
   const teamOrders = [
     { id: 'XJ08070018', status: '待取件', owner: '直属客户 · 林女士', category: '旧衣鞋包', updated: '今天 09:26', estimatedIncome: 12.8 },
-    { id: 'XJ08070012', status: '待取件', owner: '一级团队 · 周先生', category: '鞋服', updated: '今天 08:40', estimatedIncome: 8.6 },
-    { id: 'XJ08060196', status: '待收货', owner: '直属客户 · 陈先生', category: '手机', updated: '昨天 18:15', estimatedIncome: 56 },
-    { id: 'XJ08060173', status: '待质检', owner: '一级团队 · 吴女士', category: '鞋服', updated: '昨天 14:02', estimatedIncome: 10.5 },
-    { id: 'XJ08050108', status: '待确认', owner: '本人经营', category: '图书', updated: '08-05 11:35', estimatedIncome: 6.2 },
+    { id: 'XJ08070012', status: '待取件', owner: '团队客户 · 周先生', category: '鞋服', updated: '今天 08:40', estimatedIncome: 8.6 },
+    { id: 'XJ08060196', status: '待收货', owner: '直属店主 · 陈店主', category: '手机', updated: '昨天 18:15', estimatedIncome: 56 },
+    { id: 'XJ08060173', status: '待质检', owner: '团队客户 · 吴女士', category: '鞋服', updated: '昨天 14:02', estimatedIncome: 10.5 },
+    { id: 'XJ08050108', status: '待确认', owner: '直属客户 · 王女士', category: '图书', updated: '08-05 11:35', estimatedIncome: 6.2 },
   ];
 
   const teamDataMembers = [
-    { name: '周先生', kind: '一级团队', meta: '轻享店主·LV3 · 正常经营', value: '12笔' },
-    { name: '吴女士', kind: '一级团队', meta: '成长店主·LV2 · 正常经营', value: '5笔' },
-    { name: '赵店主', kind: '二级团队', meta: '成长店主·LV6 · 信息已脱敏', value: '8笔' },
-    { name: '孙店主', kind: '二级团队', meta: '进阶店主·LV8 · 信息已脱敏', value: '6笔' },
-    { name: '钱店主', kind: '二级团队', meta: '轻享店主·LV4 · 信息已脱敏', value: '4笔' },
+    { name: '周先生', kind: '团队客户', meta: '轻享店主·LV3 · 正常经营', value: '12笔' },
+    { name: '吴女士', kind: '团队客户', meta: '成长店主·LV2 · 正常经营', value: '5笔' },
+    { name: '赵店主', kind: '团队客户', meta: '成长店主·LV6 · 信息已脱敏', value: '8笔' },
+    { name: '孙店主', kind: '团队客户', meta: '进阶店主·LV8 · 信息已脱敏', value: '6笔' },
+    { name: '钱店主', kind: '团队客户', meta: '轻享店主·LV4 · 信息已脱敏', value: '4笔' },
   ];
 
   const teamMembers = [
     { name: '周先生', kind: '直属店主', meta: '轻享店主·LV3 · 正常经营', value: '12笔' },
     { name: '吴女士', kind: '直属店主', meta: '成长店主·LV2 · 正常经营', value: '5笔' },
-    { name: '林女士', kind: '直属客户', meta: '绑定于2026-06-18 · 已有效成交', value: '3笔' },
-    { name: '陈先生', kind: '直属客户', meta: '手机号尾号 6815 · 已有效成交', value: '2笔' },
-    { name: '赵店主', kind: '二级店主', meta: '仅LV11—LV12可见 · 信息已脱敏', value: '8笔' },
+    { name: '林女士', kind: '直属客户', meta: '手机尾号 xxxx', value: '3笔' },
+    { name: '陈先生', kind: '直属客户', meta: '手机尾号 xxxx', value: '2笔' },
+    { name: '赵店主', kind: '团队客户', meta: '仅LV11—LV12可见 · 信息已脱敏', value: '8笔' },
   ];
 
   const trainingContent = {
@@ -240,16 +240,15 @@
 
   function renderTeam() {
     const visibility = model.getTeamVisibility(state.level);
-    const allowed = teamMembers.filter((member) => visibility.depth === 2 || member.kind !== '二级店主');
+    const allowed = teamMembers.filter((member) => visibility.depth === 2 || member.kind !== '团队客户');
     const rows = state.teamFilter === '团队数据' ? teamDataMembers : model.filterTeamMembers(allowed, state.teamFilter);
-    const tabs = visibility.depth === 2 ? ['全部', '直属店主', '直属客户', '二级店主', '团队数据'] : ['全部', '直属店主', '直属客户'];
+    const tabs = visibility.depth === 2 ? ['全部', '直属店主', '直属客户', '团队数据'] : ['全部', '直属店主', '直属客户'];
     const teamOverviewClass = visibility.depth === 2 ? 'team-overview extended' : 'team-overview';
     const listContent = `<section class="section-card">${rows.map((member) => {
       const canPromoteCustomer = state.level >= 11 && member.kind === '直属客户';
       return `<article class="person-row"><span class="person-avatar">${member.name[0]}</span><span class="person-copy"><strong>${member.name}<em class="member-kind">${member.kind}</em></strong><span>${member.meta}</span></span><span class="person-row-actions"><b>${member.value}</b>${canPromoteCustomer ? `<button class="promote-owner-button" type="button" data-toast="${member.name}已发起店主升级">升级为店主</button>` : ''}</span></article>`;
     }).join('')}</section>`;
-    return `<section class="team-contribution"><div><div><span>下一级升级贡献</span><strong>团队店主 9 / 20</strong></div><b>45%</b></div><div class="progress-track"><i style="width:45%"></i></div><p>团队店主是当前最慢指标，还差 11 位直属店主达到升级条件。</p></section>
-      <section class="${teamOverviewClass}"><div><span>有效订单</span><strong>14</strong><small>本月授权范围</small></div><div><span>直属客户</span><b>26</b><small>已完成绑定</small></div><div><span>直属店主</span><b>8</b><small>${visibility.depth}级可见范围</small></div>${visibility.depth === 2 ? '<div><span>团队数量</span><b>42</b><small>一级＋二级店主</small></div>' : ''}</section>
+    return `<section class="${teamOverviewClass}"><div><span>有效订单</span><strong>14</strong><small>本月授权范围</small></div><div><span>直属客户</span><b>26</b><small>已完成绑定</small></div><div><span>直属店主</span><b>8</b><small>${visibility.depth}级可见范围</small></div>${visibility.depth === 2 ? '<div><span>团队数量</span><b>42</b><small>一级＋二级店主</small></div>' : ''}</section>
       <div class="filter-tabs team-tabs">${tabs.map((type) => `<button class="${state.teamFilter === type ? 'active' : ''}" type="button" data-team-filter="${type}">${type}</button>`).join('')}</div>
       ${listContent}<p class="privacy-note">可见范围扩大不代表新增收益层级，不改变现有客户绑定关系。</p>`;
   }
