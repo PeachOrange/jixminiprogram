@@ -16,6 +16,7 @@
   const state = {
     role: 'owner', level: 4, status: '正常', page: 'mine', root: 'mine', history: [],
     timeScope: '本月', incomeFilter: '全部', orderFilter: '全部', teamFilter: '全部', materialTab: '发圈工具',
+    videoCategory: '全部', imageCategory: '全部',
     selectedContent: null, registration: null, registrationResult: 'created', contentScenario: 'normal',
     cityPickerProvince: '上海市', cityPickerCity: '上海市',
     phoneAuthorized: false,
@@ -71,15 +72,31 @@
       { category: '日常回收', title: '换季清理正品旧鞋，高价回收不浪费', meta: '文案＋3张配图 · 今日更新', tone: 'shoes', action: '复制文案' },
       { category: '社区地推', title: '社区回收日，一键预约上门取件', meta: '文案＋2张配图 · 高转化', tone: 'community', action: '保存素材' },
     ],
-    视频素材: [
-      { category: '项目介绍', title: '一分钟讲清回收店主经营模式', meta: '00:58 · 竖版视频', tone: 'video-a', action: '播放视频' },
-      { category: '实拍案例', title: '回收现场：如何快速完成估价', meta: '01:26 · 横版视频', tone: 'video-b', action: '保存素材' },
-    ],
     学习资料: [
       { category: '新手必读', title: '回收店主经营入门手册', meta: '12分钟 · 已解锁', tone: 'guide', action: '阅读全文' },
       { category: '鉴定知识', title: '常见鞋服成色判断图解', meta: '8分钟 · LV5解锁', tone: 'identify', action: '查看解锁条件', locked: true },
     ],
   };
+
+  const materialCategories = [
+    { name: '电子产品', children: ['手机', '电脑', '数码配件'] },
+    { name: '旧衣鞋包', children: ['鞋服', '箱包'] },
+    { name: '图书', children: ['教材教辅', '文学小说'] },
+  ];
+
+  const materialVideos = [
+    { category: '电子产品', subcategory: '电脑', title: '一分钟讲清回收店主经营模式', meta: '00:58 · 竖版视频', tone: 'video-a', action: '播放视频' },
+    { category: '旧衣鞋包', subcategory: '鞋服', title: '回收现场：如何快速完成估价', meta: '01:26 · 横版视频', tone: 'video-b', action: '保存素材' },
+    { category: '电子产品', subcategory: '手机', title: '手机验机三步：避开翻新机', meta: '00:42 · 竖版视频', tone: 'video-c', action: '播放视频' },
+    { category: '图书', subcategory: '教材教辅', title: '教材回收：按成色快速报价', meta: '00:35 · 横版视频', tone: 'video-d', action: '保存素材' },
+  ];
+
+  const materialImages = [
+    { category: '电子产品', subcategory: '电脑', title: '电脑回收价目表海报', meta: '1张配图 · 今日更新', tone: 'video-a', action: '保存图片' },
+    { category: '电子产品', subcategory: '数码配件', title: '回收品类服务流程海报', meta: '3张配图 · 今日更新', tone: 'shoes', action: '保存图片' },
+    { category: '旧衣鞋包', subcategory: '鞋服', title: '羽绒服回收宣传图', meta: '1张配图 · 高转化', tone: 'community', action: '保存图片' },
+    { category: '旧衣鞋包', subcategory: '箱包', title: '上门回收现场实拍图', meta: '2张配图 · 高转化', tone: 'identify', action: '保存图片' },
+  ];
 
   const titles = {
     mine: '我的', register: '开通我的回收店', 'register-success': '登记成功', store: '我的回收店',
@@ -282,20 +299,63 @@
     if (['empty', 'load-error', 'network-error'].includes(state.contentScenario)) {
       return renderContentFallback(state.contentScenario);
     }
+    const materialTabs = ['发圈工具', '视频素材', '图片素材', '学习资料'];
     const momentCards = trainingContent.发圈工具.map((item, index) => `<article class="moment-card"><button class="moment-visual ${item.tone}" type="button" data-content-index="${index}"><span>${item.category}</span><i>图文 · ${item.meta.includes('3张') ? '3张配图' : '2张配图'}</i></button><div class="moment-copy"><span>发圈图文</span><h3>${item.title}</h3><p>朋友圈文案与配图已组合，可直接复制并保存配图。</p><div><button type="button" data-toast="文案已复制">复制文案</button><button type="button" data-toast="配图已保存">保存配图</button></div></div></article>`).join('');
-    const videoCards = trainingContent.视频素材.map((item, index) => `<article class="video-card"><button class="video-preview ${item.tone}" type="button" data-content-index="${index}"><span>${item.category}</span><i class="video-play">▶</i><b class="video-duration">${item.meta.split(' · ')[0]}</b></button><div class="video-info"><span>${item.meta.split(' · ')[1]}</span><h3>${item.title}</h3><div><button type="button" data-content-index="${index}">播放视频</button><button type="button" data-toast="视频素材已保存">保存视频</button></div></div></article>`).join('');
+    const videoCards = visibleMaterialEntries(materialVideos, state.videoCategory).map(({ item, index }) => `<article class="video-card"><button class="video-preview ${item.tone}" type="button" data-content-index="${index}"><span>${item.category} · ${item.subcategory}</span><i class="video-play">▶</i><b class="video-duration">${item.meta.split(' · ')[0]}</b></button><div class="video-info"><span>${item.meta.split(' · ')[1]}</span><h3>${item.title}</h3><div><button type="button" data-content-index="${index}">播放视频</button><button type="button" data-toast="视频素材已保存">保存视频</button></div></div></article>`).join('');
+    const imageCards = visibleMaterialEntries(materialImages, state.imageCategory).map(({ item, index }) => `<article class="image-card"><button class="image-visual ${item.tone}" type="button" data-content-index="${index}"><span>${item.category} · ${item.subcategory}</span><i>${item.meta.split(' · ')[0]}</i></button><div class="image-info"><h3>${item.title}</h3><p>${item.meta}</p><div><button type="button" data-content-index="${index}">查看图片</button><button type="button" data-toast="图片素材已保存">保存图片</button></div></div></article>`).join('');
     const learningCards = trainingContent.学习资料.map((item, index) => `<article class="learning-card ${item.locked ? 'locked' : ''}"><button class="learning-thumb ${item.tone}" type="button" data-content-index="${index}"><span>图文资料</span><b>${item.locked ? '锁' : '读'}</b></button><div class="learning-info"><span>${item.category}</span><h3>${item.title}</h3><p class="learning-summary">${item.locked ? '学习常见鞋服成色、瑕疵和可回收判断方法。' : '从开店准备、客户沟通到订单跟进，快速了解经营流程。'}</p><small>${item.meta}</small><button type="button" data-content-index="${index}">${item.action}</button></div></article>`).join('');
-    const contentByTab = { 发圈工具: `<section class="moment-feed">${momentCards}</section>`, 视频素材: `<section class="video-feed">${videoCards}</section>`, 学习资料: `<section class="learning-feed">${learningCards}</section>` };
-    return `<section class="training-hero"><span>专属素材</span><h2>经营内容工具</h2><p>发圈素材按图文展示，视频可直接预览，学习资料以文章形式阅读。</p></section>
-      <div class="material-tabs">${Object.keys(trainingContent).map((tab) => `<button class="${state.materialTab === tab ? 'active' : ''}" type="button" data-material-tab="${tab}">${tab}</button>`).join('')}</div>
+    const contentByTab = {
+      发圈工具: `<section class="moment-feed">${momentCards}</section>`,
+      视频素材: `${renderMaterialFilterChips()}<section class="video-feed">${videoCards}</section>`,
+      图片素材: `${renderMaterialFilterChips()}<section class="image-feed">${imageCards}</section>`,
+      学习资料: `<section class="learning-feed">${learningCards}</section>`,
+    };
+    return `<section class="training-hero"><span>专属素材</span><h2>经营内容工具</h2><p>发圈、视频、图片素材与学习资料分类清晰，点选胶囊即可筛选。</p></section>
+      <div class="material-tabs">${materialTabs.map((tab) => `<button class="${state.materialTab === tab ? 'active' : ''}" type="button" data-material-tab="${tab}">${tab}</button>`).join('')}</div>
       ${contentByTab[state.materialTab]}`;
+  }
+
+  function getMaterialItems() {
+    if (state.materialTab === '视频素材') return materialVideos;
+    if (state.materialTab === '图片素材') return materialImages;
+    return trainingContent[state.materialTab];
+  }
+
+  function materialCategoryKey(item) {
+    return `${item.category}·${item.subcategory}`;
+  }
+
+  function materialSelectedCategory() {
+    return state.materialTab === '视频素材' ? state.videoCategory : state.imageCategory;
+  }
+
+  function visibleMaterialEntries(items, category) {
+    return items
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => category === '全部' || materialCategoryKey(item) === category);
+  }
+
+  function materialChipGroups() {
+    const items = getMaterialItems();
+    const availableKeys = new Set(items.map(materialCategoryKey));
+    return materialCategories
+      .map((group) => ({ name: group.name, children: group.children.filter((child) => availableKeys.has(`${group.name}·${child}`)) }))
+      .filter((group) => group.children.length > 0);
+  }
+
+  function renderMaterialFilterChips() {
+    const selected = materialSelectedCategory();
+    const groups = materialChipGroups().map((group) => `<span class="chip-group">${group.children.map((child) => `<button class="${selected === `${group.name}·${child}` ? 'active' : ''}" type="button" data-material-filter="${group.name}·${child}"><b>${group.name}</b><i>·</i><span>${child}</span></button>`).join('')}</span>`).join('');
+    return `<div class="material-filter-chips"><button class="${selected === '全部' ? 'active' : ''}" type="button" data-material-filter="全部">全部</button>${groups}</div>`;
   }
 
   function renderContent() {
     if (state.contentScenario === 'unavailable') return renderContentFallback('unavailable');
-    const item = state.selectedContent || trainingContent.学习资料[0];
+    const item = state.selectedContent || getMaterialItems()[0];
     if (item.locked) return `<section class="locked-content"><span class="lock-symbol">锁</span><h2>${item.title}</h2><p>该内容需要轻享店主·LV5解锁。当前等级 LV${state.level}，还差 11 位团队店主。</p><button type="button" data-page="growth">查看解锁条件</button></section>`;
-    return `<section class="content-detail"><span class="section-label">${item.category}</span><h2>${item.title}</h2><p>${item.meta}</p><div class="content-media">${state.materialTab === '视频素材' ? '<span class="play-button">▶</span><small>视频播放演示</small>' : '<strong>店主经营内容示例</strong><p>围绕真实回收场景，向客户说明可回收品类、服务流程与平台保障。内容不承诺预测收益，也不披露客户隐私。</p>'}</div><button type="button" data-toast="内容操作已完成">${item.action}</button></section>`;
+    const category = [item.category, item.subcategory].filter(Boolean).join(' · ');
+    const isVideo = state.materialTab === '视频素材';
+    return `<section class="content-detail"><span class="section-label">${category}</span><h2>${item.title}</h2><p>${item.meta}</p><div class="content-media">${isVideo ? '<span class="play-button">▶</span><small>视频播放演示</small>' : '<strong>店主经营内容示例</strong><p>围绕真实回收场景，向客户说明可回收品类、服务流程与平台保障。内容不承诺预测收益，也不披露客户隐私。</p>'}</div><button type="button" data-toast="内容操作已完成">${item.action}</button></section>`;
   }
 
   function renderRules() {
@@ -483,13 +543,20 @@
     if (teamButton) { state.teamFilter = teamButton.dataset.teamFilter; render(); }
     const materialButton = event.target.closest('[data-material-tab]');
     if (materialButton) { state.materialTab = materialButton.dataset.materialTab; render(); }
+    const materialFilterButton = event.target.closest('[data-material-filter]');
+    if (materialFilterButton) {
+      const category = materialFilterButton.dataset.materialFilter;
+      if (state.materialTab === '视频素材') state.videoCategory = category;
+      else if (state.materialTab === '图片素材') state.imageCategory = category;
+      render();
+    }
     if (event.target.closest('[data-content-retry]')) {
       state.contentScenario = 'normal';
       contentStateSelect.value = 'normal';
       render();
     }
     const contentButton = event.target.closest('[data-content-index]');
-    if (contentButton) { state.selectedContent = trainingContent[state.materialTab][Number(contentButton.dataset.contentIndex)]; goTo('content'); }
+    if (contentButton) { state.selectedContent = getMaterialItems()[Number(contentButton.dataset.contentIndex)]; goTo('content'); }
     const benefitHelpButton = event.target.closest('[data-benefit-help]');
     if (benefitHelpButton) renderBenefitHelpModal(Number(benefitHelpButton.dataset.benefitHelp));
     const upgradeConditionsButton = event.target.closest('[data-upgrade-conditions]');

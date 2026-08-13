@@ -621,6 +621,57 @@ test('专属素材为发圈、视频和学习资料使用不同展示结构', ()
   }
 });
 
+test('素材分类使用四个顶层tab且不再嵌套素材中心层级', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const training = sourceSection(source, 'function renderTraining()', 'function renderContent()');
+  for (const marker of ['发圈工具', '视频素材', '图片素材', '学习资料', 'material-tabs']) {
+    assert.ok(training.includes(marker), `顶层素材tab缺少：${marker}`);
+  }
+  assert.equal(training.includes('素材中心'), false, '不应保留素材中心中间层');
+  assert.equal(training.includes('data-material-subtab'), false, '不应保留素材中心子分类tab');
+  assert.ok(source.includes("materialTab: '发圈工具'"), '缺少顶层素材tab状态');
+});
+
+test('视频和图片共用单行一级二级合并胶囊筛选', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const training = sourceSection(source, 'function renderTraining()', 'function renderContent()');
+  for (const marker of ['material-filter-chips', 'data-material-filter', 'chip-group', 'materialCategoryKey']) {
+    assert.ok(training.includes(marker), `合并胶囊筛选缺少：${marker}`);
+  }
+  for (const marker of ['materialCategories', "name: '电子产品'", "children: ['手机', '电脑', '数码配件']", 'materialVideos', 'materialImages']) {
+    assert.ok(source.includes(marker), `共享素材分类数据缺少：${marker}`);
+  }
+  assert.equal(source.includes('一级分类'), false, '不应保留两级分类双行标签');
+  assert.equal(source.includes('data-video-category'), false, '不应保留旧两级分类按钮');
+  for (const marker of ["videoCategory: '全部'", "imageCategory: '全部'", "event.target.closest('[data-material-filter]')"]) {
+    assert.ok(source.includes(marker), `合并胶囊筛选交互缺少：${marker}`);
+  }
+  assert.ok(styles.includes('.material-filter-chips'), '缺少合并胶囊筛选样式');
+  assert.ok(styles.includes('.chip-group'), '缺少胶囊分组样式');
+});
+
+test('合并胶囊只展示有素材的二级组合', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const training = sourceSection(source, 'function renderTraining()', 'function renderContent()');
+  for (const marker of ['Set(items.map(materialCategoryKey))', 'group.children.length > 0']) {
+    assert.ok(training.includes(marker), `胶囊按内容过滤缺少：${marker}`);
+  }
+  assert.equal(training.includes('category-empty'), false, '只显示有内容组合时不应依赖空分类占位');
+});
+
+test('图片素材展示独立图片卡片并带共享分类数据', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const training = sourceSection(source, 'function renderTraining()', 'function renderContent()');
+  for (const marker of ['image-card', 'image-feed', '保存图片', '电脑回收价目表海报', '羽绒服回收宣传图']) {
+    assert.ok(source.includes(marker), `图片素材列表缺少：${marker}`);
+  }
+  assert.equal((source.match(/action: '保存图片'/g) || []).length, 4, '图片素材应包含4条分类数据');
+  assert.ok(source.includes("subcategory: '数码配件'"), '现有图片应补齐共享分类');
+  assert.ok(styles.includes('.image-card'), '缺少图片素材卡片样式');
+});
+
 test('小程序二级页面按实际访问路径返回', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   assert.ok(source.includes('state.history.push(state.page)'));
