@@ -381,11 +381,14 @@ test('普通用户头像区展示可复制的用户ID', () => {
   assert.ok(styles.includes('.ordinary-profile-id'), '缺少普通用户ID行样式');
 });
 
-test('小程序培训素材覆盖三类内容和等级锁定', () => {
+test('素材中心只保留视频与图片两种素材类型', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
-  for (const marker of ['发圈工具', '视频素材', '学习资料', '复制文案', '保存素材', '查看解锁条件']) {
-    assert.ok(source.includes(marker));
+  const training = sourceSection(source, 'function renderTraining()', 'function renderContent()');
+  for (const marker of ['素材中心', '视频素材', '图片素材', 'data-material-type', 'material-type-tabs']) {
+    assert.ok(training.includes(marker), `素材中心缺少：${marker}`);
   }
+  assert.equal(training.includes('学习资料'), false, '素材中心不应混入学习资料');
+  assert.equal(training.includes('发圈工具'), false, '素材中心不应混入发圈工具');
 });
 
 test('内容负向状态提供明确文案和重试或返回动作', () => {
@@ -426,11 +429,11 @@ test('店主我的页只保留我的回收店入口', () => {
   assert.equal(mine.includes('店主服务'), false);
 });
 
-test('我的回收店区分分享店铺与专属素材并提供客服入口', () => {
+test('我的回收店区分分享店铺与素材中心并提供客服入口', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const store = sourceSection(source, 'function renderStore()', 'function renderGrowth()');
   assert.match(store, /data-page="share"[^>]*>[\s\S]*?分享店铺/);
-  assert.match(store, /data-page="training"[^>]*>[\s\S]*?专属素材/);
+  assert.match(store, /data-page="training"[^>]*>[\s\S]*?素材中心/);
   assert.ok(store.includes('data-page="advisor"'));
   assert.ok(store.includes('查看微信码'));
 });
@@ -613,11 +616,32 @@ test('LV11和LV12仅允许将团队客户升级为店主', () => {
   assert.ok(styles.includes('.promote-owner-button'), '缺少升级为店主按钮样式');
 });
 
-test('专属素材为发圈、视频和学习资料使用不同展示结构', () => {
+test('素材中心使用两级分类与差异化素材卡片', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
   const training = sourceSection(source, 'function renderTraining()', 'function renderContent()');
-  for (const marker of ['专属素材', 'moment-card', 'video-card', 'learning-card', 'video-duration', 'learning-summary']) {
-    assert.ok(training.includes(marker), `专属素材缺少结构：${marker}`);
+  for (const marker of [
+    'material-category-tabs', 'material-subcategory-tabs',
+    'data-material-category', 'data-material-subcategory',
+    'material-video-card', 'material-image-card', 'video-duration', 'image-count',
+  ]) {
+    assert.ok(training.includes(marker), `素材中心结构缺少：${marker}`);
+  }
+  for (const marker of ['宣传图片', '公司内部', '电子产品', '电脑']) {
+    assert.ok(source.includes(marker), `素材分类数据缺少：${marker}`);
+  }
+  for (const marker of [
+    "event.target.closest('[data-material-type]')",
+    "event.target.closest('[data-material-category]')",
+    "event.target.closest('[data-material-subcategory]')",
+  ]) {
+    assert.ok(source.includes(marker), `素材中心交互缺少：${marker}`);
+  }
+  for (const marker of [
+    '.material-type-tabs', '.material-category-tabs', '.material-subcategory-tabs',
+    '.material-video-card', '.material-image-card',
+  ]) {
+    assert.ok(styles.includes(marker), `素材中心样式缺少：${marker}`);
   }
 });
 
