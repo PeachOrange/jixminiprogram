@@ -15,8 +15,7 @@
 
   const state = {
     role: 'owner', level: 4, status: '正常', page: 'mine', root: 'mine', history: [],
-    timeScope: '本月', incomeFilter: '全部', orderFilter: '全部', teamFilter: '全部',
-    materialType: '视频素材', materialCategory: '项目宣传', materialSubcategory: '公司内部',
+    timeScope: '本月', incomeFilter: '全部', orderFilter: '全部', teamFilter: '全部', materialTab: '发圈工具',
     selectedContent: null, registration: null, registrationResult: 'created', contentScenario: 'normal',
     cityPickerProvince: '上海市', cityPickerCity: '上海市',
     phoneAuthorized: false,
@@ -68,50 +67,24 @@
   ];
 
   const trainingContent = {
-    视频素材: {
-      项目宣传: {
-        公司内部: [
-          { type: '视频素材', title: '一分钟讲清回收店主经营模式', duration: '00:58', format: '竖版视频', tone: 'video-a', updated: '今日更新', action: '播放视频' },
-          { type: '视频素材', title: '公司回收服务全流程介绍', duration: '01:26', format: '横版视频', tone: 'video-b', updated: '本周热门', action: '播放视频' },
-        ],
-        店主介绍: [
-          { type: '视频素材', title: '回收店主的一天', duration: '00:46', format: '竖版视频', tone: 'video-c', updated: '3天前', action: '播放视频' },
-        ],
-      },
-      电子产品: {
-        电脑: [
-          { type: '视频素材', title: '电脑回收前需要做哪些准备', duration: '00:42', format: '横版视频', tone: 'video-d', updated: '今日更新', action: '播放视频' },
-        ],
-        手机: [
-          { type: '视频素材', title: '手机回收数据清理指南', duration: '00:35', format: '竖版视频', tone: 'video-c', updated: '昨日更新', action: '播放视频' },
-        ],
-      },
-    },
-    图片素材: {
-      宣传图片: {
-        公司内部: [
-          { type: '图片素材', title: '极X星球品牌介绍长图', count: 3, format: '竖版长图', tone: 'image-a', updated: '今日更新', action: '保存图片' },
-          { type: '图片素材', title: '上门回收服务流程海报', count: 4, format: '方形海报', tone: 'image-b', updated: '本周热门', action: '保存图片' },
-        ],
-        社区活动: [
-          { type: '图片素材', title: '社区回收日活动海报', count: 2, format: '活动海报', tone: 'image-c', updated: '3天前', action: '保存图片' },
-        ],
-      },
-      电子产品: {
-        电脑: [
-          { type: '图片素材', title: '电脑回收价目表海报', count: 3, format: '方形海报', tone: 'image-d', updated: '今日更新', action: '保存图片' },
-        ],
-        手机: [
-          { type: '图片素材', title: '手机回收注意事项图解', count: 5, format: '知识长图', tone: 'image-e', updated: '昨日更新', action: '保存图片' },
-        ],
-      },
-    },
+    发圈工具: [
+      { category: '日常回收', title: '换季清理正品旧鞋，高价回收不浪费', meta: '文案＋3张配图 · 今日更新', tone: 'shoes', action: '复制文案' },
+      { category: '社区地推', title: '社区回收日，一键预约上门取件', meta: '文案＋2张配图 · 高转化', tone: 'community', action: '保存素材' },
+    ],
+    视频素材: [
+      { category: '项目介绍', title: '一分钟讲清回收店主经营模式', meta: '00:58 · 竖版视频', tone: 'video-a', action: '播放视频' },
+      { category: '实拍案例', title: '回收现场：如何快速完成估价', meta: '01:26 · 横版视频', tone: 'video-b', action: '保存素材' },
+    ],
+    学习资料: [
+      { category: '新手必读', title: '回收店主经营入门手册', meta: '12分钟 · 已解锁', tone: 'guide', action: '阅读全文' },
+      { category: '鉴定知识', title: '常见鞋服成色判断图解', meta: '8分钟 · LV5解锁', tone: 'identify', action: '查看解锁条件', locked: true },
+    ],
   };
 
   const titles = {
     mine: '我的', register: '开通我的回收店', 'register-success': '登记成功', store: '我的回收店',
     growth: '成长与权益', wallet: '我的钱包', 'team-orders': '店铺进行中订单', team: '客户与团队',
-    share: '分享店铺', landing: '分享落地页', training: '素材中心', content: '素材详情',
+    share: '分享店铺', landing: '分享落地页', training: '专属素材', content: '内容详情',
     rules: '经营规则', status: '状态详情', advisor: '专属顾问', operations: '经营数据',
   };
 
@@ -231,7 +204,7 @@
       <div class="store-income"><span>${state.timeScope}已结算店铺收益</span><strong>${money(wallet.monthStoreIncome * scopeFactor)}</strong><small>实际结算数据，不含回收收入</small></div></section>
       <section class="store-metric-panel"><div class="store-metric-heading"><span>收益状态</span><small>当前金额</small></div><div class="metric-finance-grid"><article><span>待结算店铺收益<small class="current-metric-badge">当前</small></span><strong>${money(wallet.pendingBusiness)}</strong><p>已产生，等待平台完成结算</p></article><article class="locked-income"><span>待解锁拉新收益<small class="current-metric-badge">当前</small><button class="metric-help-button" type="button" data-locked-income-help aria-label="查看拉新收益说明">!</button></span><strong>${money(wallet.lockedAcquisition)}</strong><p>达到拉新收益解锁条件后释放</p></article></div><div class="store-metric-heading operation"><span>${state.timeScope}经营数据</span><small>随时间筛选切换</small></div><div class="metric-operation-grid"><article><span>店铺订单</span><strong>${Math.round(14 * scopeFactor)}笔</strong></article><article><span>新增店铺客户</span><strong>${Math.round(8 * scopeFactor)}人</strong></article></div></section>
       <button class="order-summary-card" type="button" data-page="team-orders"><span><small>店铺进行中订单</small><strong>${summary.total} 笔</strong></span><div>${['待取件', '待收货', '待质检', '待确认'].map((key) => `<em>${key}<b>${summary[key]}</b></em>`).join('')}</div><i>查看全部 →</i></button>
-      <section class="section-card"><div class="section-card-head"><h3>经营工具</h3></div><div class="agent-grid store-tools"><button type="button" data-page="team"><i>团</i><span>客户与团队</span></button><button type="button" data-page="growth"><i>级</i><span>成长与权益</span></button><button type="button" data-page="wallet"><i>收</i><span>收益明细</span></button><button type="button" data-page="share"><i>享</i><span>分享店铺</span></button><button type="button" data-page="training"><i>材</i><span>素材中心</span></button><button type="button" data-page="rules"><i>规</i><span>规则说明</span></button></div></section>
+      <section class="section-card"><div class="section-card-head"><h3>经营工具</h3></div><div class="agent-grid store-tools"><button type="button" data-page="team"><i>团</i><span>客户与团队</span></button><button type="button" data-page="growth"><i>级</i><span>成长与权益</span></button><button type="button" data-page="wallet"><i>收</i><span>收益明细</span></button><button type="button" data-page="share"><i>享</i><span>分享店铺</span></button><button type="button" data-page="training"><i>材</i><span>专属素材</span></button><button type="button" data-page="rules"><i>规</i><span>规则说明</span></button></div></section>
       <button class="store-advisor-entry" type="button" data-page="advisor"><span class="advisor-avatar">顾</span><span><small>专属运营服务</small><strong>陈老师 · 店主运营顾问</strong><em>开店、经营与等级问题都可以联系我</em></span><b>查看微信码 →</b></button>`;
   }
 
@@ -309,33 +282,20 @@
     if (['empty', 'load-error', 'network-error'].includes(state.contentScenario)) {
       return renderContentFallback(state.contentScenario);
     }
-    const typeData = trainingContent[state.materialType];
-    const categories = Object.keys(typeData);
-    if (!typeData[state.materialCategory]) state.materialCategory = categories[0];
-    const subcategories = Object.keys(typeData[state.materialCategory]);
-    if (!typeData[state.materialCategory][state.materialSubcategory]) state.materialSubcategory = subcategories[0];
-    const materials = typeData[state.materialCategory][state.materialSubcategory];
-    const cards = materials.map((item, index) => item.type === '视频素材'
-      ? `<article class="material-video-card"><button class="material-video-preview ${item.tone}" type="button" data-content-index="${index}"><span>${item.format}</span><i class="video-play">▶</i><b class="video-duration">${item.duration}</b></button><div class="material-card-copy"><small>${item.updated}</small><h3>${item.title}</h3><p>${state.materialCategory} · ${state.materialSubcategory}</p><div class="material-card-actions"><button type="button" data-content-index="${index}">播放视频</button><button type="button" data-toast="视频素材已保存">保存视频</button></div></div></article>`
-      : `<article class="material-image-card"><button class="material-image-preview ${item.tone}" type="button" data-content-index="${index}"><span>${item.format}</span><span class="image-stack" aria-hidden="true"><i></i><i></i><i></i></span><b class="image-count">${item.count}张</b></button><div class="material-card-copy"><small>${item.updated}</small><h3>${item.title}</h3><p>${state.materialCategory} · ${state.materialSubcategory}</p><div class="material-card-actions"><button type="button" data-content-index="${index}">查看图片</button><button type="button" data-toast="图片素材已保存">保存图片</button></div></div></article>`).join('');
-    return `<section class="training-hero"><span>店主经营素材</span><h2>素材中心</h2><p>按素材类型和业务分类快速查找，可预览后保存到手机。</p></section>
-      <div class="material-type-tabs">${Object.keys(trainingContent).map((type) => `<button class="${state.materialType === type ? 'active' : ''}" type="button" data-material-type="${type}">${type}</button>`).join('')}</div>
-      <section class="material-filter-panel"><div class="material-filter-heading"><span>一级分类</span><small>${state.materialType}</small></div><div class="material-category-tabs">${categories.map((category) => `<button class="${state.materialCategory === category ? 'active' : ''}" type="button" data-material-category="${category}">${category}</button>`).join('')}</div><div class="material-filter-heading secondary"><span>二级分类</span><small>${state.materialCategory}</small></div><div class="material-subcategory-tabs">${subcategories.map((subcategory) => `<button class="${state.materialSubcategory === subcategory ? 'active' : ''}" type="button" data-material-subcategory="${subcategory}">${subcategory}</button>`).join('')}</div></section>
-      <div class="material-list-heading"><div><span>${state.materialCategory}</span><h3>${state.materialSubcategory}</h3></div><small>共 ${materials.length} 条素材</small></div>
-      <section class="material-feed">${cards}</section>`;
+    const momentCards = trainingContent.发圈工具.map((item, index) => `<article class="moment-card"><button class="moment-visual ${item.tone}" type="button" data-content-index="${index}"><span>${item.category}</span><i>图文 · ${item.meta.includes('3张') ? '3张配图' : '2张配图'}</i></button><div class="moment-copy"><span>发圈图文</span><h3>${item.title}</h3><p>朋友圈文案与配图已组合，可直接复制并保存配图。</p><div><button type="button" data-toast="文案已复制">复制文案</button><button type="button" data-toast="配图已保存">保存配图</button></div></div></article>`).join('');
+    const videoCards = trainingContent.视频素材.map((item, index) => `<article class="video-card"><button class="video-preview ${item.tone}" type="button" data-content-index="${index}"><span>${item.category}</span><i class="video-play">▶</i><b class="video-duration">${item.meta.split(' · ')[0]}</b></button><div class="video-info"><span>${item.meta.split(' · ')[1]}</span><h3>${item.title}</h3><div><button type="button" data-content-index="${index}">播放视频</button><button type="button" data-toast="视频素材已保存">保存视频</button></div></div></article>`).join('');
+    const learningCards = trainingContent.学习资料.map((item, index) => `<article class="learning-card ${item.locked ? 'locked' : ''}"><button class="learning-thumb ${item.tone}" type="button" data-content-index="${index}"><span>图文资料</span><b>${item.locked ? '锁' : '读'}</b></button><div class="learning-info"><span>${item.category}</span><h3>${item.title}</h3><p class="learning-summary">${item.locked ? '学习常见鞋服成色、瑕疵和可回收判断方法。' : '从开店准备、客户沟通到订单跟进，快速了解经营流程。'}</p><small>${item.meta}</small><button type="button" data-content-index="${index}">${item.action}</button></div></article>`).join('');
+    const contentByTab = { 发圈工具: `<section class="moment-feed">${momentCards}</section>`, 视频素材: `<section class="video-feed">${videoCards}</section>`, 学习资料: `<section class="learning-feed">${learningCards}</section>` };
+    return `<section class="training-hero"><span>专属素材</span><h2>经营内容工具</h2><p>发圈素材按图文展示，视频可直接预览，学习资料以文章形式阅读。</p></section>
+      <div class="material-tabs">${Object.keys(trainingContent).map((tab) => `<button class="${state.materialTab === tab ? 'active' : ''}" type="button" data-material-tab="${tab}">${tab}</button>`).join('')}</div>
+      ${contentByTab[state.materialTab]}`;
   }
-
 
   function renderContent() {
     if (state.contentScenario === 'unavailable') return renderContentFallback('unavailable');
-    const currentItems = trainingContent[state.materialType][state.materialCategory][state.materialSubcategory];
-    const item = state.selectedContent || currentItems[0];
+    const item = state.selectedContent || trainingContent.学习资料[0];
     if (item.locked) return `<section class="locked-content"><span class="lock-symbol">锁</span><h2>${item.title}</h2><p>该内容需要轻享店主·LV5解锁。当前等级 LV${state.level}，还差 11 位团队店主。</p><button type="button" data-page="growth">查看解锁条件</button></section>`;
-    const meta = item.type === '视频素材' ? `${item.duration} · ${item.format}` : `${item.count}张 · ${item.format}`;
-    const media = item.type === '视频素材'
-      ? '<span class="play-button">▶</span><small>视频播放演示</small>'
-      : '<span class="image-detail-stack"><i></i><i></i><i></i></span><small>图片素材预览</small>';
-    return `<section class="content-detail"><span class="section-label">${state.materialCategory} · ${state.materialSubcategory}</span><h2>${item.title}</h2><p>${meta}</p><div class="content-media ${item.type === '图片素材' ? 'image-content-media' : ''}">${media}</div><button type="button" data-toast="内容操作已完成">${item.action}</button></section>`;
+    return `<section class="content-detail"><span class="section-label">${item.category}</span><h2>${item.title}</h2><p>${item.meta}</p><div class="content-media">${state.materialTab === '视频素材' ? '<span class="play-button">▶</span><small>视频播放演示</small>' : '<strong>店主经营内容示例</strong><p>围绕真实回收场景，向客户说明可回收品类、服务流程与平台保障。内容不承诺预测收益，也不披露客户隐私。</p>'}</div><button type="button" data-toast="内容操作已完成">${item.action}</button></section>`;
   }
 
   function renderRules() {
@@ -521,34 +481,15 @@
     if (orderButton) { state.orderFilter = orderButton.dataset.orderFilter; render(); }
     const teamButton = event.target.closest('[data-team-filter]');
     if (teamButton) { state.teamFilter = teamButton.dataset.teamFilter; render(); }
-    const materialTypeButton = event.target.closest('[data-material-type]');
-    if (materialTypeButton) {
-      state.materialType = materialTypeButton.dataset.materialType;
-      state.materialCategory = Object.keys(trainingContent[state.materialType])[0];
-      state.materialSubcategory = Object.keys(trainingContent[state.materialType][state.materialCategory])[0];
-      state.selectedContent = null;
-      render();
-    }
-    const materialCategoryButton = event.target.closest('[data-material-category]');
-    if (materialCategoryButton) {
-      state.materialCategory = materialCategoryButton.dataset.materialCategory;
-      state.materialSubcategory = Object.keys(trainingContent[state.materialType][state.materialCategory])[0];
-      state.selectedContent = null;
-      render();
-    }
-    const materialSubcategoryButton = event.target.closest('[data-material-subcategory]');
-    if (materialSubcategoryButton) {
-      state.materialSubcategory = materialSubcategoryButton.dataset.materialSubcategory;
-      state.selectedContent = null;
-      render();
-    }
+    const materialButton = event.target.closest('[data-material-tab]');
+    if (materialButton) { state.materialTab = materialButton.dataset.materialTab; render(); }
     if (event.target.closest('[data-content-retry]')) {
       state.contentScenario = 'normal';
       contentStateSelect.value = 'normal';
       render();
     }
     const contentButton = event.target.closest('[data-content-index]');
-    if (contentButton) { state.selectedContent = trainingContent[state.materialType][state.materialCategory][state.materialSubcategory][Number(contentButton.dataset.contentIndex)]; goTo('content'); }
+    if (contentButton) { state.selectedContent = trainingContent[state.materialTab][Number(contentButton.dataset.contentIndex)]; goTo('content'); }
     const benefitHelpButton = event.target.closest('[data-benefit-help]');
     if (benefitHelpButton) renderBenefitHelpModal(Number(benefitHelpButton.dataset.benefitHelp));
     const upgradeConditionsButton = event.target.closest('[data-upgrade-conditions]');
