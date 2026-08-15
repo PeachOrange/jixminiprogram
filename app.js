@@ -122,7 +122,8 @@
   }
 
   function progressValue() {
-    return model.calculateProgress(conditions, 'all');
+    const rule = model.getUpgradeConditions(state.level);
+    return model.calculateProgress(conditions, rule.relation);
   }
 
   function renderHeader() {
@@ -228,19 +229,24 @@
   function renderGrowth() {
     const cards = model.getLevelCards(state.level);
     const roadmap = model.getLevelRoadmap(state.level);
-    const conditionProgress = conditions.map((item) => {
-      const ratio = Math.min(100, Math.round((item.current / item.target) * 100));
-      const value = `${item.money ? money(item.current) : item.current} / ${item.money ? money(item.target) : item.target}`;
-      return `<div class="condition-row ${ratio === progressValue() ? 'bottleneck' : ''}"><div class="condition-meta"><span>${item.name}</span><b>${value} · ${ratio}%</b></div><div class="progress-track"><i style="width:${ratio}%"></i></div></div>`;
-    }).join('');
     const cardMarkup = cards.map((card, index) => {
       const action = index === 0 ? `data-benefit-help="${card.level}"` : `data-upgrade-conditions="${card.level}"`;
       return `<article class="benefit-card ${index === 0 ? 'current' : index === 1 ? 'next' : ''}" data-level-card="${index}"><div class="benefit-card-top"><div><span>${index === 0 ? '当前等级' : index === 1 ? '下一级' : '后续等级'}</span><h2>LV${card.level}</h2><p>${card.identity}</p></div><b>${index === 0 ? '已生效' : index === 1 ? '升级目标' : '继续成长'}</b></div><div class="benefit-list">${card.benefits.map((benefit) => `<div class="benefit-item ${benefit.isNew ? 'new' : ''}"><i>✓</i><span>${benefit.name}</span>${benefit.isNew ? '<em>新增</em>' : ''}</div>`).join('')}</div><button type="button" ${action}>${index === 0 ? '查看权益使用说明' : `查看LV${card.level}升级条件`}</button></article>`;
     }).join('');
     const moreCard = roadmap.length ? `<article class="benefit-card more-benefits-card" data-level-card="${cards.length}"><div class="more-benefits-top"><span>更多等级</span><b>待解锁</b></div><div class="more-benefits-copy"><i class="more-benefits-lock" aria-hidden="true"></i><h2>升级解锁更多权益</h2><p>继续成长，逐步解锁 LV${roadmap[0].level}–LV${roadmap[roadmap.length - 1].level} 经营能力。</p></div><div class="more-benefits-preview"><span>更多经营品类</span><span>高阶团队能力</span><span>专属运营支持</span></div></article>` : '';
-    return `<section class="growth-progress-panel"><div class="growth-progress-head"><div><span>成长总览</span><h2>${model.getIdentityView(state).identity}·LV${state.level}</h2></div><strong>综合进度 ${progressValue()}%</strong></div><p>升级条件需全部满足，橙色为当前最慢指标。</p><div class="condition-list">${conditionProgress}</div></section>
-      <div class="level-section-head"><div><span class="section-label">等级权益</span><h3>横向滑动查看下一级全部权益</h3></div><div class="level-dots">${cards.map((card, index) => `<button class="${index === 0 ? 'active' : ''}" type="button" data-level-dot="${index}" aria-label="查看LV${card.level}" ${index === 0 ? 'aria-current="true"' : ''}></button>`).join('')}${roadmap.length ? `<button class="locked" type="button" data-level-dot="${cards.length}" aria-label="查看更多等级权益"></button>` : ''}</div></div>
+    const levelSection = `<div class="level-section-head"><div><span class="section-label">等级权益</span><h3>横向滑动查看下一级全部权益</h3></div><div class="level-dots">${cards.map((card, index) => `<button class="${index === 0 ? 'active' : ''}" type="button" data-level-dot="${index}" aria-label="查看LV${card.level}" ${index === 0 ? 'aria-current="true"' : ''}></button>`).join('')}${roadmap.length ? `<button class="locked" type="button" data-level-dot="${cards.length}" aria-label="查看更多等级权益"></button>` : ''}</div></div>
       <section class="level-carousel">${cardMarkup}${moreCard}</section>`;
+    const rule = model.getUpgradeConditions(state.level);
+    if (rule.relation === 'offline') return levelSection;
+    const progress = progressValue();
+    const relationCopy = rule.relation === 'any' ? '满足任一条件即可升级' : '满足全部条件后自动升级';
+    const conditionProgress = conditions.map((item) => {
+      const ratio = Math.min(100, Math.round((item.current / item.target) * 100));
+      const value = `${item.money ? money(item.current) : item.current} / ${item.money ? money(item.target) : item.target}`;
+      return `<div class="condition-row ${ratio === progress ? 'bottleneck' : ''}"><div class="condition-meta"><span>${item.name}</span><b>${value} · ${ratio}%</b></div><div class="progress-track"><i style="width:${ratio}%"></i></div></div>`;
+    }).join('');
+    return `<section class="growth-progress-panel"><div class="growth-progress-head"><div><span>成长总览</span><h2>${model.getIdentityView(state).identity}·LV${state.level}</h2></div><strong>综合进度 ${progress}%</strong></div><p>${relationCopy}</p><div class="condition-list">${conditionProgress}</div></section>
+      ${levelSection}`;
   }
 
   function renderWallet() {
@@ -271,11 +277,8 @@
   }
 
   function renderShare() {
-    const destination = model.getShareDestination(state.status);
-    return `<section class="share-hero"><span class="section-label">店铺专属海报</span><h2>把自己的回收店分享出去</h2><p>海报与链接携带稳定的店铺标识，已绑定客户不会因点击其他店铺链接而改绑。</p></section>
-      <section class="poster-card"><div class="poster-brand">极X星球</div><span class="verified-badge">平台认证回收店</span><h2>陈先生回收店</h2><p>旧衣鞋包 · 手机数码 · 图书<br>平台回收、质检、结算全程保障</p><div class="poster-owner"><div class="avatar">陈</div><span><b>陈店主</b><small>轻享店主·LV${state.level}</small></span></div><div class="poster-qr">专属<br>二维码</div><small>扫码发起回收，进入平台统一回收流程</small></section>
-      <section class="share-actions"><button type="button" data-toast="店铺专属海报已保存">保存海报</button><button type="button" data-toast="店铺专属链接已复制">复制专属链接</button><button type="button" data-page="landing">预览分享落地页</button></section>
-      <section class="link-status ${destination.mode === 'platform' ? 'danger' : ''}"><strong>当前链接状态：${destination.mode === 'store' ? '店铺专属页' : '平台通用页'}</strong><p>${destination.message}；${destination.allowAttribution ? '允许按既有规则新增归因。' : '不产生新绑定或新店铺收益。'}</p></section>`;
+    return `<section class="poster-card"><div class="poster-brand">极X星球</div><span class="verified-badge">平台认证回收店</span><h2>陈先生回收店</h2><p>旧衣鞋包 · 手机数码 · 图书<br>平台回收、质检、结算全程保障</p><div class="poster-owner"><div class="avatar">陈</div><span><b>陈店主</b><small>轻享店主·LV${state.level}</small></span></div><div class="poster-qr">专属<br>二维码</div><small>扫码发起回收，进入平台统一回收流程</small></section>
+      <section class="share-actions" aria-label="店铺分享方式"><button type="button" data-toast="已唤起好友分享"><span class="share-action-icon friend" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M8.5 8.5h10a5.5 5.5 0 0 1 0 11h-4.1L10 23v-3.5H8.5a5.5 5.5 0 0 1 0-11Z"/><path d="M18 14.5h4.5a4.5 4.5 0 0 1 0 9H21V27l-4-3.5h-2"/></svg></span><span>分享好友</span></button><button type="button" data-toast="店铺专属小程序码已生成"><span class="share-action-icon code" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M11.5 11.5a5.5 5.5 0 1 1 5.5-5.5v15a5 5 0 1 1-5-5h8.5"/><circle cx="23" cy="16" r="3"/></svg></span><span>小程序码</span></button><button type="button" data-toast="店铺专属海报已保存"><span class="share-action-icon save" aria-hidden="true"><svg viewBox="0 0 32 32"><rect x="5" y="6" width="22" height="20" rx="3"/><circle cx="11.5" cy="12" r="2"/><path d="m7.5 23 6-6 4 4 3-3 4 5"/></svg></span><span>保存图片</span></button></section>`;
   }
 
   function renderLanding() {

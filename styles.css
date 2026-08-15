@@ -466,9 +466,9 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .common-feature-grid button { min-width: 0; padding: 4px 1px; border: 0; color: var(--navy); background: transparent; cursor: pointer; font-size: 8px; }
 .common-feature-grid i { display: grid; width: 30px; height: 30px; margin: 0 auto 5px; place-items: center; border-radius: 10px; color: var(--teal); background: var(--mint); font-style: normal; font-weight: 800; }
 .common-feature-grid span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.register-intro, .share-hero { margin: 0 -14px 10px; padding: 22px 18px; color: #fff; background: linear-gradient(145deg, #102a34, #1a6b60); }
-.register-intro h2, .share-hero h2 { margin: 6px 0; font-family: var(--font-title); font-size: 22px; }
-.register-intro p, .share-hero p { margin: 0; color: #c3d9d3; font-size: 8px; line-height: 1.6; }
+.register-intro { margin: 0 -14px 10px; padding: 22px 18px; color: #fff; background: linear-gradient(145deg, #102a34, #1a6b60); }
+.register-intro h2 { margin: 6px 0; font-family: var(--font-title); font-size: 22px; }
+.register-intro p { margin: 0; color: #c3d9d3; font-size: 8px; line-height: 1.6; }
 .registration-form { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
 .registration-form label > span { display: block; margin-bottom: 5px; font-size: 8px; font-weight: 800; }
 .registration-form label small { color: var(--muted); font-weight: 400; }
@@ -597,13 +597,13 @@ button, a, select { -webkit-tap-highlight-color: transparent; }
 .poster-owner small { color: #b9cdc8; font-size: 7px; }
 .poster-qr { display: grid; width: 82px; height: 82px; margin: 23px 0 8px; place-items: center; border: 7px dotted var(--navy); color: var(--navy); background: #fff; text-align: center; font-size: 9px; font-weight: 800; }
 .poster-card > small { color: #b6cbc5; font-size: 7px; }
-.share-actions { display: grid; grid-template-columns: repeat(2,1fr); gap: 7px; margin: 9px 0; }
-.share-actions button { padding: 9px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 8px; }
-.share-actions button:first-child { border-color: var(--teal); color: #fff; background: var(--teal); }
-.share-actions button:last-child { grid-column: 1 / -1; }
-.link-status { padding: 11px; border-radius: 12px; color: #1e654f; background: #e4f3eb; font-size: 8px; }
-.link-status.danger { color: #8c3f31; background: #fce4de; }
-.link-status p { margin: 4px 0 0; font-size: 7px; }
+.share-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 9px 0; padding: 12px 8px 10px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.share-actions button { display: grid; min-width: 0; gap: 7px; justify-items: center; padding: 0 2px 2px; border: 0; background: transparent; cursor: pointer; font-size: 8px; }
+.share-action-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 50%; color: #fff; background: #20b984; box-shadow: 0 7px 15px rgba(22, 125, 112, .2); transition: transform .18s ease, box-shadow .18s ease; }
+.share-action-icon.code { background: #18c77d; }
+.share-action-icon.save { background: #25c8c7; }
+.share-action-icon svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.share-actions button:hover .share-action-icon { box-shadow: 0 9px 18px rgba(22, 125, 112, .26); transform: translateY(-1px); }
 .landing-store, .landing-generic { padding: 25px 18px; border-radius: 22px; background: #fff; text-align: center; }
 .landing-store h2, .landing-generic h2 { margin: 10px 0 5px; font-family: var(--font-title); font-size: 24px; }
 .landing-store > p, .landing-generic p { color: var(--muted); font-size: 9px; line-height: 1.6; }

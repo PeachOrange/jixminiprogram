@@ -210,9 +210,24 @@ test('小程序登记页回显已有记录并区分资料更新结果', () => {
 
 test('小程序覆盖登记、我的回收店、统一钱包和分享页面', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
-  for (const marker of ['开通我的回收店', '<span>名称</span>', '运营老师微信码', '我的回收店', '可提现余额', '店铺进行中订单', '店铺专属海报', '分享落地页']) {
+  for (const marker of ['开通我的回收店', '<span>名称</span>', '运营老师微信码', '我的回收店', '可提现余额', '店铺进行中订单', '分享好友', '小程序码', '保存图片', '分享落地页']) {
     assert.ok(source.includes(marker), `缺少页面标识：${marker}`);
   }
+});
+
+test('分享店铺仅展示海报与三种分享方式', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const styles = readFileSync(`${root}/styles.css`, 'utf8');
+  const share = sourceSection(source, 'function renderShare()', 'function renderLanding()');
+  for (const marker of ['poster-card', 'aria-label="店铺分享方式"', '分享好友', '小程序码', '保存图片', 'share-action-icon']) {
+    assert.ok(share.includes(marker), `分享页缺少：${marker}`);
+  }
+  for (const marker of ['share-hero', 'link-status', '当前链接状态', '把自己的回收店分享出去', '复制专属链接', '预览分享落地页']) {
+    assert.equal(share.includes(marker), false, `分享页仍展示：${marker}`);
+  }
+  assert.match(styles, /\.share-actions\s*\{[^}]*grid-template-columns:\s*repeat\(3, 1fr\)/, '分享方式应使用三列布局');
+  assert.equal(styles.includes('.share-hero'), false, '不应保留分享页顶部介绍样式');
+  assert.equal(styles.includes('.link-status'), false, '不应保留链接状态样式');
 });
 
 test('开店登记使用名称、可编辑手机号和选填微信号且不展示店名预览', () => {
@@ -486,6 +501,33 @@ test('成长权益展示真实指标进度与横向权益卡片', () => {
     assert.ok(growth.includes(marker), `成长权益缺少结构：${marker}`);
   }
   assert.equal(growth.includes('level-card-track'), false);
+});
+
+test('成长总览升级文案随规则动态显示且不解释橙色', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const growth = sourceSection(source, 'function renderGrowth()', 'function renderWallet()');
+  for (const marker of ['满足全部条件后自动升级', '满足任一条件即可升级', 'rule.relation']) {
+    assert.ok(growth.includes(marker), `动态升级文案缺少：${marker}`);
+  }
+  assert.equal(growth.includes('升级条件需全部满足'), false, '不应保留旧升级文案');
+  assert.equal(growth.includes('橙色为当前最慢指标'), false, '不应保留橙色图例文字');
+});
+
+test('综合进度随等级规则关系取最低或最高完成度', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const progress = sourceSection(source, 'function progressValue()', 'function renderHeader()');
+  for (const marker of ['getUpgradeConditions', 'rule.relation']) {
+    assert.ok(progress.includes(marker), `综合进度缺少规则关系：${marker}`);
+  }
+});
+
+test('LV12线下审核隐藏成长进度面板并保留等级权益区', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const growth = sourceSection(source, 'function renderGrowth()', 'function renderWallet()');
+  for (const marker of ["rule.relation === 'offline'", 'return levelSection', 'level-section-head', 'level-carousel']) {
+    assert.ok(growth.includes(marker), `LV12成长页缺少：${marker}`);
+  }
+  assert.ok(growth.includes('growth-progress-panel'), '应保留成长进度面板组件供非LV12展示');
 });
 
 test('成长权益按钮打开权益说明和下两级升级条件弹窗', () => {
