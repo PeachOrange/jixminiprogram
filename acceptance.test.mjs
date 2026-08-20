@@ -89,18 +89,18 @@ test('LV5和LV6升级弹窗使用后台已发布的三项门槛', () => {
   const level5 = JSON.parse(JSON.stringify(model.getUpgradeConditions(5)));
   const level6 = JSON.parse(JSON.stringify(model.getUpgradeConditions(6)));
   assert.deepEqual(level5.conditions.map((item) => [item.name, item.target, item.unit]), [
-    ['店铺客户', 20, '人'], ['店铺收益', 10000, '元'], ['团队店主', 20, '人'],
+    ['店铺客户', 20, '人'], ['店铺收益', 10000, '元'], ['直推店主', 20, '人'],
   ]);
   assert.deepEqual(level6.conditions.map((item) => [item.name, item.target, item.unit]), [
-    ['店铺客户', 30, '人'], ['店铺收益', 18000, '元'], ['团队店主', 35, '人'],
+    ['店铺客户', 30, '人'], ['店铺收益', 18000, '元'], ['直推店主', 35, '人'],
   ]);
   assert.equal(level5.conditions[1].money, true);
 });
 
-test('小程序升级指标统一使用店铺客户店铺收益和团队店主', () => {
+test('小程序升级指标统一使用店铺客户店铺收益和直推店主', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const conditions = sourceSection(source, 'const conditions = [', 'const incomeRows = [');
-  for (const marker of ['店铺客户', '店铺收益', '团队店主']) {
+  for (const marker of ['店铺客户', '店铺收益', '直推店主']) {
     assert.ok(conditions.includes(marker), `小程序升级指标缺少：${marker}`);
   }
   for (const marker of ['有效成交客户', '团队有效订单', '累计已结算店铺收益']) {
@@ -638,19 +638,20 @@ test('客户与团队仅使用直属店主直属客户和团队客户三种关�
   }
 });
 
-test('LV11和LV12仅允许将团队客户升级为店主', () => {
+test('LV11和LV12仅允许将直属客户升级为店主', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
+  const modelSource = readFileSync(`${root}/model.js`, 'utf8');
   const styles = readFileSync(`${root}/styles.css`, 'utf8');
   const team = sourceSection(source, 'function renderTeam()', 'function renderShare()');
   for (const marker of [
-    'state.level >= 11',
-    "member.kind === '直属客户'",
+    'model.canOpenOwner(state.level, state.status, member.kind)',
     'promote-owner-button',
-    '升级为店主',
-    '已发起店主升级',
+    '开通为店主',
+    '已发起开通店主',
   ]) {
     assert.ok(team.includes(marker), `客户升级店主操作缺少：${marker}`);
   }
+  assert.ok(modelSource.includes("memberKind === '直属客户'"), '升级店主资格应只开放给直属客户');
   assert.ok(styles.includes('.person-row-actions'), '缺少成员行右侧操作区样式');
   assert.ok(styles.includes('.promote-owner-button'), '缺少升级为店主按钮样式');
 });
@@ -725,4 +726,33 @@ test('小程序入口保留独立挂载点和场景控制', () => {
   const html = readFileSync(`${root}/index.html`, 'utf8');
   assert.ok(html.includes('id="prototype-app"'));
   assert.ok(html.includes('id="scenario-controls"'));
+});
+
+test('小程序对LV99返回隐藏后的公开等级视图', () => {
+  const model = miniModel();
+  assert.deepEqual(JSON.parse(JSON.stringify(model.getPublicLevelView({ role: 'owner', level: 99 }))), {
+    identity: '店主', level: null, levelLabel: '', hidden: true, showStoreArea: true,
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(model.getPublicLevelView({ role: 'owner', level: 8 }))), {
+    identity: '星享店主', level: 8, levelLabel: 'LV8', hidden: false, showStoreArea: true,
+  });
+});
+
+test('LV99在小程序没有自动升级目标且只允许后台人工维护', () => {
+  const result = JSON.parse(JSON.stringify(miniModel().getUpgradeFeedback(99)));
+  assert.deepEqual(result, { type: 'manual', targetLevel: null, identity: '店主', autoUpgrade: false, newBenefits: [] });
+});
+
+test('小程序所有可见等级位置统一隐藏LV99原始数值', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  assert.ok(source.includes('model.getPublicLevelView(state)'));
+  assert.equal(source.includes('LV${state.level}'), false);
+  assert.equal(source.includes('区县店主'), false);
+  assert.equal(source.includes('LV99'), false);
+});
+
+test('LV99继承运营权益后不再显示等级锁定内容', () => {
+  const source = readFileSync(`${root}/app.js`, 'utf8');
+  const content = sourceSection(source, 'function renderContent()', 'function renderRules()');
+  assert.ok(content.includes('if (item.locked && !publicLevel.hidden)'));
 });
