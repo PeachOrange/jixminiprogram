@@ -32,7 +32,7 @@
   const conditions = [
     { name: '店铺客户', current: 18, target: 20, enabled: true },
     { name: '店铺收益', current: 8800, target: 10000, enabled: true, money: true },
-    { name: '团队店主', current: 9, target: 20, enabled: true },
+    { name: '直推店主', current: 9, target: 20, enabled: true, minLevel: 2 },
   ];
 
   const incomeRows = [
@@ -133,10 +133,13 @@
 
   function renderProfile(identity) {
     const progress = progressValue();
+    const identityCopy = identity.levelLabel ? `${identity.identity}·${identity.levelLabel}` : identity.identity;
+    const growthCopy = identity.hidden ? '当前权益由运营统一维护' : identity.level === 12 ? '合伙人权益已全部生效' : `距 LV${identity.level + 1} 还差 11 位直推店主`;
+    const progressCopy = identity.hidden || identity.level === 12 ? 100 : progress;
     return `<section class="profile-hero">
       <div class="profile-row"><div class="avatar">陈</div><div class="profile-main"><h2>陈先生</h2>
-      <p><span class="identity-label">${identity.identity}·LV${identity.level}</span><small>店铺编号 JX-0805168</small></p>
-      <button class="profile-growth" type="button" data-page="growth"><span>${identity.level === 12 ? '合伙人权益已全部生效' : `距 LV${identity.level + 1} 还差 11 位团队店主`}</span><div class="profile-progress"><i style="width:${identity.level === 12 ? 100 : progress}%"></i></div><b>${identity.level === 12 ? 100 : progress}% →</b></button></div></div>
+      <p><span class="identity-label">${identityCopy}</span><small>店铺编号 JX-0805168</small></p>
+      <button class="profile-growth" type="button" data-page="growth"><span>${growthCopy}</span><div class="profile-progress"><i style="width:${progressCopy}%"></i></div><b>${progressCopy}% →</b></button></div></div>
     </section>`;
   }
 
@@ -180,7 +183,7 @@
   }
 
   function renderMine() {
-    const identity = model.getIdentityView(state);
+    const identity = model.getPublicLevelView(state);
     const profile = identity.showStoreArea ? renderProfile(identity) : renderOrdinaryProfile();
     const storeEntry = identity.showStoreArea
       ? '<button class="store-entry-card mine-store-hero" type="button" data-page="store"><span class="store-entry-mark">店</span><span><small>认证回收店</small><strong>陈先生回收店</strong><em>本月 14 笔有效订单 · 新增 8 位客户</em></span><b>进入我的回收店 →</b></button>'
@@ -214,10 +217,12 @@
   }
 
   function renderStore() {
+    const publicLevel = model.getPublicLevelView(state);
+    const publicLevelCopy = publicLevel.levelLabel ? `${publicLevel.identity}·${publicLevel.levelLabel}` : publicLevel.identity;
     const wallet = model.getWalletSummary();
     const summary = model.summarizeOrders(teamOrders);
     const scopeFactor = state.timeScope === '本月' ? 1 : state.timeScope === '上月' ? 0.78 : 5.6;
-    return `<section class="store-hero"><div class="store-title"><div><span class="verified-badge">平台认证店主</span><h2>陈先生回收店</h2><p>${model.getIdentityView(state).identity}·LV${state.level} · ${state.status} · 数据更新于10:20</p></div><button type="button" data-page="share">分享店铺</button></div>
+    return `<section class="store-hero"><div class="store-title"><div><span class="verified-badge">平台认证店主</span><h2>陈先生回收店</h2><p>${publicLevelCopy} · ${state.status} · 数据更新于10:20</p></div><button type="button" data-page="share">分享店铺</button></div>
       <div class="scope-tabs">${['本月', '上月', '累计'].map((tab) => `<button type="button" class="${state.timeScope === tab ? 'active' : ''}" data-time-scope="${tab}">${tab}</button>`).join('')}</div>
       <div class="store-income"><span>${state.timeScope}已结算店铺收益</span><strong>${money(wallet.monthStoreIncome * scopeFactor)}</strong><small>实际结算数据，不含回收收入</small></div></section>
       <section class="store-metric-panel"><div class="store-metric-heading"><span>收益状态</span><small>当前金额</small></div><div class="metric-finance-grid"><article><span>待结算店铺收益<small class="current-metric-badge">当前</small></span><strong>${money(wallet.pendingBusiness)}</strong><p>已产生，等待平台完成结算</p></article><article class="locked-income"><span>待解锁拉新收益<small class="current-metric-badge">当前</small><button class="metric-help-button" type="button" data-locked-income-help aria-label="查看拉新收益说明">!</button></span><strong>${money(wallet.lockedAcquisition)}</strong><p>达到拉新收益解锁条件后释放</p></article></div><div class="store-metric-heading operation"><span>${state.timeScope}经营数据</span><small>随时间筛选切换</small></div><div class="metric-operation-grid"><article><span>店铺订单</span><strong>${Math.round(14 * scopeFactor)}笔</strong></article><article><span>新增店铺客户</span><strong>${Math.round(8 * scopeFactor)}人</strong></article></div></section>
@@ -227,6 +232,10 @@
   }
 
   function renderGrowth() {
+    const publicLevel = model.getPublicLevelView(state);
+    if (publicLevel.hidden) {
+      return '<section class="growth-progress-panel"><div class="growth-progress-head"><div><span>成长与权益</span><h2>店主权益已生效</h2></div><strong>人工维护</strong></div><p>当前等级不在小程序展示，如需调整请联系运营。</p></section>';
+    }
     const cards = model.getLevelCards(state.level);
     const roadmap = model.getLevelRoadmap(state.level);
     const cardMarkup = cards.map((card, index) => {
@@ -245,7 +254,7 @@
       const value = `${item.money ? money(item.current) : item.current} / ${item.money ? money(item.target) : item.target}`;
       return `<div class="condition-row ${ratio === progress ? 'bottleneck' : ''}"><div class="condition-meta"><span>${item.name}</span><b>${value} · ${ratio}%</b></div><div class="progress-track"><i style="width:${ratio}%"></i></div></div>`;
     }).join('');
-    return `<section class="growth-progress-panel"><div class="growth-progress-head"><div><span>成长总览</span><h2>${model.getIdentityView(state).identity}·LV${state.level}</h2></div><strong>综合进度 ${progress}%</strong></div><p>${relationCopy}</p><div class="condition-list">${conditionProgress}</div></section>
+    return `<section class="growth-progress-panel"><div class="growth-progress-head"><div><span>成长总览</span><h2>${publicLevel.identity}·${publicLevel.levelLabel}</h2></div><strong>综合进度 ${progress}%</strong></div><p>${relationCopy}</p><div class="condition-list">${conditionProgress}</div></section>
       ${levelSection}`;
   }
 
@@ -268,8 +277,8 @@
     const tabs = visibility.depth === 2 ? ['全部', '直属店主', '直属客户', '团队数据'] : ['全部', '直属店主', '直属客户'];
     const teamOverviewClass = visibility.depth === 2 ? 'team-overview extended' : 'team-overview';
     const listContent = `<section class="section-card">${rows.map((member) => {
-      const canPromoteCustomer = state.level >= 11 && member.kind === '直属客户';
-      return `<article class="person-row"><span class="person-avatar">${member.name[0]}</span><span class="person-copy"><strong>${member.name}<em class="member-kind">${member.kind}</em></strong><span>${member.meta}</span></span><span class="person-row-actions"><b>${member.value}</b>${canPromoteCustomer ? `<button class="promote-owner-button" type="button" data-toast="${member.name}已发起店主升级">升级为店主</button>` : ''}</span></article>`;
+      const canPromoteCustomer = model.canOpenOwner(state.level, state.status, member.kind);
+      return `<article class="person-row"><span class="person-avatar">${member.name[0]}</span><span class="person-copy"><strong>${member.name}<em class="member-kind">${member.kind}</em></strong><span>${member.meta}</span></span><span class="person-row-actions"><b>${member.value}</b>${canPromoteCustomer ? `<button class="promote-owner-button" type="button" data-toast="${member.name}已发起开通店主">开通为店主</button>` : ''}</span></article>`;
     }).join('')}</section>`;
     return `<section class="${teamOverviewClass}"><div><span>有效订单</span><strong>14</strong><small>本月授权范围</small></div><div><span>直属客户</span><b>26</b><small>已完成绑定</small></div><div><span>直属店主</span><b>8</b><small>${visibility.depth}级可见范围</small></div>${visibility.depth === 2 ? '<div><span>团队数量</span><b>42</b><small>一级＋二级店主</small></div>' : ''}</section>
       <div class="filter-tabs team-tabs">${tabs.map((type) => `<button class="${state.teamFilter === type ? 'active' : ''}" type="button" data-team-filter="${type}">${type}</button>`).join('')}</div>
@@ -277,7 +286,9 @@
   }
 
   function renderShare() {
-    return `<section class="poster-card"><div class="poster-brand">极X星球</div><span class="verified-badge">平台认证回收店</span><h2>陈先生回收店</h2><p>旧衣鞋包 · 手机数码 · 图书<br>平台回收、质检、结算全程保障</p><div class="poster-owner"><div class="avatar">陈</div><span><b>陈店主</b><small>轻享店主·LV${state.level}</small></span></div><div class="poster-qr">专属<br>二维码</div><small>扫码发起回收，进入平台统一回收流程</small></section>
+    const publicLevel = model.getPublicLevelView(state);
+    const publicLevelCopy = publicLevel.levelLabel ? `${publicLevel.identity}·${publicLevel.levelLabel}` : publicLevel.identity;
+    return `<section class="poster-card"><div class="poster-brand">极X星球</div><span class="verified-badge">平台认证回收店</span><h2>陈先生回收店</h2><p>旧衣鞋包 · 手机数码 · 图书<br>平台回收、质检、结算全程保障</p><div class="poster-owner"><div class="avatar">陈</div><span><b>陈店主</b><small>${publicLevelCopy}</small></span></div><div class="poster-qr">专属<br>二维码</div><small>扫码发起回收，进入平台统一回收流程</small></section>
       <section class="share-actions" aria-label="店铺分享方式"><button type="button" data-toast="已唤起好友分享"><span class="share-action-icon friend" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M8.5 8.5h10a5.5 5.5 0 0 1 0 11h-4.1L10 23v-3.5H8.5a5.5 5.5 0 0 1 0-11Z"/><path d="M18 14.5h4.5a4.5 4.5 0 0 1 0 9H21V27l-4-3.5h-2"/></svg></span><span>分享好友</span></button><button type="button" data-toast="店铺专属小程序码已生成"><span class="share-action-icon code" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M11.5 11.5a5.5 5.5 0 1 1 5.5-5.5v15a5 5 0 1 1-5-5h8.5"/><circle cx="23" cy="16" r="3"/></svg></span><span>小程序码</span></button><button type="button" data-toast="店铺专属海报已保存"><span class="share-action-icon save" aria-hidden="true"><svg viewBox="0 0 32 32"><rect x="5" y="6" width="22" height="20" rx="3"/><circle cx="11.5" cy="12" r="2"/><path d="m7.5 23 6-6 4 4 3-3 4 5"/></svg></span><span>保存图片</span></button></section>`;
   }
 
@@ -353,9 +364,11 @@
   }
 
   function renderContent() {
+    const publicLevel = model.getPublicLevelView(state);
+    const publicLevelCopy = publicLevel.hidden ? '当前店主权益' : `当前等级 ${publicLevel.levelLabel}`;
     if (state.contentScenario === 'unavailable') return renderContentFallback('unavailable');
     const item = state.selectedContent || getMaterialItems()[0];
-    if (item.locked) return `<section class="locked-content"><span class="lock-symbol">锁</span><h2>${item.title}</h2><p>该内容需要轻享店主·LV5解锁。当前等级 LV${state.level}，还差 11 位团队店主。</p><button type="button" data-page="growth">查看解锁条件</button></section>`;
+    if (item.locked && !publicLevel.hidden) return `<section class="locked-content"><span class="lock-symbol">锁</span><h2>${item.title}</h2><p>该内容需要轻享店主·LV5解锁。${publicLevelCopy}，还差 11 位直推店主。</p><button type="button" data-page="growth">查看解锁条件</button></section>`;
     const category = [item.category, item.subcategory].filter(Boolean).join(' · ');
     const isVideo = state.materialTab === '视频素材';
     return `<section class="content-detail"><span class="section-label">${category}</span><h2>${item.title}</h2><p>${item.meta}</p><div class="content-media">${isVideo ? '<span class="play-button">▶</span><small>视频播放演示</small>' : '<strong>店主经营内容示例</strong><p>围绕真实回收场景，向客户说明可回收品类、服务流程与平台保障。内容不承诺预测收益，也不披露客户隐私。</p>'}</div><button type="button" data-toast="内容操作已完成">${item.action}</button></section>`;
@@ -381,6 +394,11 @@
 
   function renderUpgradeModal() {
     const feedback = model.getUpgradeFeedback(state.level);
+    if (feedback.type === 'manual') {
+      modal.innerHTML = '<div class="modal-card"><button class="modal-close" type="button" data-close-modal>×</button><span>等级维护</span><h2>店主权益已生效</h2><p>当前等级仅支持后台人工维护，小程序不展示等级信息。</p><button type="button" data-close-modal>我知道了</button></div>';
+      modal.hidden = false;
+      return;
+    }
     modal.innerHTML = `<div class="modal-card"><button class="modal-close" type="button" data-close-modal>×</button><span>${feedback.type === 'automatic' ? '升级成功' : '资格达标'}</span><h2>${feedback.identity}·LV${feedback.targetLevel}</h2><p>${feedback.type === 'automatic' ? '新等级与权益已自动生效。' : '已获得超级合伙人资格，请联系专属顾问完成线下审核。'}</p><div class="modal-benefits">${feedback.newBenefits.map((item) => `<b>新增 · ${item}</b>`).join('')}</div><button type="button" data-close-modal>${feedback.type === 'automatic' ? '查看成长权益' : '联系专属顾问'}</button></div>`;
     modal.hidden = false;
   }
@@ -400,7 +418,7 @@
       ? rule.conditions.map((item) => {
         const current = currentValues.get(item.name);
         const currentValue = item.money ? money(current.current) : `${current.current}${item.unit}`;
-        const targetValue = item.money ? money(item.target) : `${item.target}${item.unit}`;
+        const targetValue = item.money ? money(item.target) : `${item.minLevel ? `≥ LV${item.minLevel} · ` : ''}${item.target}${item.unit}`;
         return `<article><div><strong>${item.name}</strong><small>当前 ${currentValue}</small></div><b>目标 ${targetValue}</b></article>`;
       }).join('')
       : '<p class="modal-rule-note">达到 LV12 资格后，请联系专属顾问完成线下审核。</p>';

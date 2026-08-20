@@ -21,28 +21,28 @@
     2: ['基础业务收益', '统一钱包提现', '新店主学习内容'],
     3: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材'],
     4: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板'],
-    5: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '手机回收品类', '店铺专属素材'],
-    6: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容'],
-    7: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持'],
-    8: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群'],
-    9: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案'],
-    10: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案', '区域活动支持'],
-    11: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案', '区域活动支持', '二级团队经营汇总'],
-    12: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案', '区域活动支持', '二级团队经营汇总', '合伙人专属方案', '专属顾问支持'],
+    5: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材'],
+    6: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容'],
+    7: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持'],
+    8: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群'],
+    9: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案'],
+    10: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案', '区域活动支持'],
+    11: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案', '区域活动支持', '二级团队经营汇总'],
+    12: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案', '区域活动支持', '二级团队经营汇总', '合伙人专属方案', '专属顾问支持'],
   };
 
   const levelUpgradeRules = {
-    2: { targets: [3, 0, 0], relation: 'all', upgradeMode: 'automatic' },
-    3: { targets: [5, 2000, 6], relation: 'all', upgradeMode: 'automatic' },
-    4: { targets: [12, 5000, 12], relation: 'all', upgradeMode: 'automatic' },
-    5: { targets: [20, 10000, 20], relation: 'all', upgradeMode: 'automatic' },
-    6: { targets: [30, 18000, 35], relation: 'all', upgradeMode: 'automatic' },
-    7: { targets: [40, 28000, 55], relation: 'all', upgradeMode: 'automatic' },
-    8: { targets: [50, 40000, 80], relation: 'all', upgradeMode: 'automatic' },
-    9: { targets: [65, 65000, 120], relation: 'all', upgradeMode: 'automatic' },
-    10: { targets: [90, 100000, 180], relation: 'all', upgradeMode: 'automatic' },
-    11: { targets: [120, 160000, 260], relation: 'all', upgradeMode: 'automatic' },
-    12: { targets: [0, 0, 0], relation: 'offline', upgradeMode: 'contact' },
+    2: { targets: [3, 0, 0], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
+    3: { targets: [5, 2000, 6], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
+    4: { targets: [12, 5000, 12], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
+    5: { targets: [20, 10000, 20], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
+    6: { targets: [30, 18000, 35], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
+    7: { targets: [40, 28000, 55], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
+    8: { targets: [50, 40000, 80], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
+    9: { targets: [65, 65000, 120], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
+    10: { targets: [90, 100000, 180], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
+    11: { targets: [120, 160000, 260], directOwnerMinLevel: 3, relation: 'all', upgradeMode: 'automatic' },
+    12: { targets: [0, 0, 0], directOwnerMinLevel: 2, relation: 'offline', upgradeMode: 'contact' },
   };
 
   const benefitUsageDescriptions = {
@@ -51,6 +51,7 @@
     新店主学习内容: '进入“专属素材”的学习资料查看已解锁内容。',
     发圈基础素材: '进入“专属素材”的发圈工具复制文案或保存配图。',
     一级团队经营看板: '在“客户与团队”查看直属客户与一级团队数据。',
+    开通店主: '在“客户与团队”将本人直推的普通客户开通为店主。',
     手机回收品类: '在我的回收店查看手机品类并发起对应回收业务。',
     店铺专属素材: '在“专属素材”使用当前等级开放的店铺内容。',
     团队收益: '符合规则的团队订单结算后，在收益明细中查看。',
@@ -76,6 +77,18 @@
     const level = Math.max(2, Math.min(12, Number(state.level) || 2));
     const identity = identityNames.find((item) => level >= item.min)?.name || '成长店主';
     return { identity, level, showStoreArea: true };
+  }
+
+  function getPublicLevelView(state) {
+    if (state.role === 'owner' && Number(state.level) === 99) {
+      return { identity: '店主', level: null, levelLabel: '', hidden: true, showStoreArea: true };
+    }
+    const identityView = getIdentityView(state);
+    return {
+      ...identityView,
+      levelLabel: `LV${identityView.level}`,
+      hidden: false,
+    };
   }
 
   function calculateProgress(conditions, relation) {
@@ -138,7 +151,7 @@
   function getUpgradeConditions(level) {
     const normalized = Math.max(2, Math.min(12, Number(level) || 2));
     const rule = levelUpgradeRules[normalized];
-    const conditionNames = ['店铺客户', '店铺收益', '团队店主'];
+    const conditionNames = ['店铺客户', '店铺收益', '直推店主'];
     return {
       level: normalized,
       relation: rule.relation,
@@ -148,6 +161,7 @@
         target: rule.targets[index],
         unit: index === 1 ? '元' : '人',
         money: index === 1,
+        ...(index === 2 ? { minLevel: rule.directOwnerMinLevel || 2 } : {}),
       })).filter((item) => item.target > 0),
     };
   }
@@ -184,7 +198,17 @@
     return { ...(statusImpacts[status] || statusImpacts.正常) };
   }
 
+  function canOpenOwner(level, status, memberKind) {
+    const normalized = Math.max(2, Math.min(12, Number(level) || 2));
+    return (levelBenefits[normalized] || []).includes('开通店主')
+      && getStatusImpact(status).canAddOwner
+      && memberKind === '直属客户';
+  }
+
   function getUpgradeFeedback(currentLevel) {
+    if (Number(currentLevel) === 99) {
+      return { type: 'manual', targetLevel: null, identity: '店主', autoUpgrade: false, newBenefits: [] };
+    }
     const level = Math.max(2, Math.min(12, Number(currentLevel) || 2));
     const targetLevel = level >= 11 ? 12 : level + 1;
     const previous = levelBenefits[targetLevel - 1] || [];
@@ -219,12 +243,14 @@
   }
 
   root.MiniProgramModel = {
+    canOpenOwner,
     calculateProgress,
     filterIncome,
     filterTeamMembers,
     getBenefitUsage,
     getContentFallback,
     getIdentityView,
+    getPublicLevelView,
     getLevelCards,
     getLevelRoadmap,
     getShareDestination,
