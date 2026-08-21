@@ -36,8 +36,11 @@ test('店主等级使用新版店主称谓', () => {
   const model = miniModel();
   assert.equal(model.getIdentityView({ role: 'owner', level: 2 }).identity, '成长店主');
   assert.equal(model.getIdentityView({ role: 'owner', level: 4 }).identity, '轻享店主');
-  assert.equal(model.getIdentityView({ role: 'owner', level: 8 }).identity, '星享店主');
+  assert.equal(model.getIdentityView({ role: 'owner', level: 6 }).identity, '星享店主');
+  assert.equal(model.getIdentityView({ role: 'owner', level: 8 }).identity, '超级店主');
   assert.equal(model.getIdentityView({ role: 'owner', level: 11 }).identity, '超级店主');
+  assert.equal(model.getIdentityView({ role: 'owner', level: 12 }).identity, '超级合伙人');
+  assert.equal(model.getIdentityView({ role: 'owner', level: 17 }).identity, '超级合伙人');
 });
 
 test('全部满足取最低完成度，任一满足取最高完成度', () => {
@@ -78,23 +81,27 @@ test('等级尾卡展示当前三张卡之后的剩余等级路线', () => {
   const model = miniModel();
   assert.equal(typeof model.getLevelRoadmap, 'function');
   const roadmap = JSON.parse(JSON.stringify(model.getLevelRoadmap(4)));
-  assert.deepEqual(roadmap.map((item) => item.level), [7, 8, 9, 10, 11, 12]);
-  assert.deepEqual(roadmap[0].newBenefits, ['优先结算支持']);
+  assert.deepEqual(roadmap.map((item) => item.level), [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
+  assert.ok(roadmap[0].newBenefits.includes('团队独立收益后台'));
   assert.ok(roadmap.every((item) => item.newBenefits.length > 0));
 });
 
-test('LV5和LV6升级弹窗使用后台已发布的三项门槛', () => {
+test('LV5至LV17升级弹窗使用飞书文档门槛', () => {
   const model = miniModel();
   assert.equal(typeof model.getUpgradeConditions, 'function');
   const level5 = JSON.parse(JSON.stringify(model.getUpgradeConditions(5)));
   const level6 = JSON.parse(JSON.stringify(model.getUpgradeConditions(6)));
-  assert.deepEqual(level5.conditions.map((item) => [item.name, item.target, item.unit]), [
-    ['店铺客户', 20, '人'], ['店铺收益', 10000, '元'], ['直推店主', 20, '人'],
+  const level12 = JSON.parse(JSON.stringify(model.getUpgradeConditions(12)));
+  const level17 = JSON.parse(JSON.stringify(model.getUpgradeConditions(17)));
+  assert.deepEqual(level5.conditions.map((item) => [item.name, item.target, item.unit, item.minLevel || null]), [
+    ['店铺客户', 30, '人', null],
   ]);
-  assert.deepEqual(level6.conditions.map((item) => [item.name, item.target, item.unit]), [
-    ['店铺客户', 30, '人'], ['店铺收益', 18000, '元'], ['直推店主', 35, '人'],
+  assert.deepEqual(level6.conditions.map((item) => [item.name, item.target, item.unit, item.minLevel || null]), [
+    ['店铺客户', 50, '人', null],
   ]);
-  assert.equal(level5.conditions[1].money, true);
+  assert.deepEqual(level12.conditions.map((item) => [item.target, item.minLevel || null]), [[1500, null], [5000, null], [10, 5]]);
+  assert.deepEqual(level17.conditions.map((item) => [item.target, item.minLevel || null]), [[5000, null], [15000, null], [100, 5]]);
+  assert.equal(level12.conditions[1].money, true);
 });
 
 test('小程序升级指标统一使用店铺客户店铺收益和直推店主', () => {
@@ -169,13 +176,16 @@ test('休眠保留历史收益并暂停升级', () => {
   assert.equal(impact.canAddOwner, false);
 });
 
-test('普通等级自动升级而LV12达标只引导线下沟通', () => {
+test('LV1至LV17均按条件自动升级且LV17为最高公开等级', () => {
   const automatic = miniModel().getUpgradeFeedback(4);
   const partner = miniModel().getUpgradeFeedback(11);
+  const highest = miniModel().getUpgradeFeedback(17);
   assert.equal(automatic.targetLevel, 5);
   assert.equal(automatic.identity, '轻享店主');
-  assert.equal(partner.type, 'contact');
-  assert.equal(partner.autoUpgrade, false);
+  assert.equal(partner.type, 'automatic');
+  assert.equal(partner.targetLevel, 12);
+  assert.equal(partner.autoUpgrade, true);
+  assert.deepEqual(JSON.parse(JSON.stringify(highest)), { type: 'complete', targetLevel: null, identity: '超级合伙人', autoUpgrade: false, newBenefits: [] });
 });
 
 test('小程序登记首次创建并在重复提交时更新同一记录', () => {
@@ -521,13 +531,14 @@ test('综合进度随等级规则关系取最低或最高完成度', () => {
   }
 });
 
-test('LV12线下审核隐藏成长进度面板并保留等级权益区', () => {
+test('LV12继续自动成长且LV17使用最高公开等级文案', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
   const growth = sourceSection(source, 'function renderGrowth()', 'function renderWallet()');
-  for (const marker of ["rule.relation === 'offline'", 'return levelSection', 'level-section-head', 'level-carousel']) {
-    assert.ok(growth.includes(marker), `LV12成长页缺少：${marker}`);
-  }
-  assert.ok(growth.includes('growth-progress-panel'), '应保留成长进度面板组件供非LV12展示');
+  const profile = sourceSection(source, 'function renderProfile(identity)', 'function renderMineServicePanels()');
+  assert.equal(growth.includes("rule.relation === 'offline'"), false, 'LV12不再走线下审核关系');
+  assert.ok(growth.includes('growth-progress-panel'), '自动成长等级应保留成长进度面板');
+  assert.ok(profile.includes('identity.level === 17'), 'LV17应使用最高等级状态文案');
+  assert.ok(profile.includes('最高等级权益已全部生效'));
 });
 
 test('成长权益按钮打开权益说明和下两级升级条件弹窗', () => {
@@ -638,11 +649,16 @@ test('客户与团队仅使用直属店主直属客户和团队客户三种关�
   }
 });
 
-test('LV11和LV12仅允许将直属客户升级为店主', () => {
+test('开通店主权限按等级权益状态和直属客户关系判断', () => {
   const source = readFileSync(`${root}/app.js`, 'utf8');
-  const modelSource = readFileSync(`${root}/model.js`, 'utf8');
+  const model = miniModel();
   const styles = readFileSync(`${root}/styles.css`, 'utf8');
   const team = sourceSection(source, 'function renderTeam()', 'function renderShare()');
+  assert.equal(model.canOpenOwner(8, '正常', '直属客户'), false);
+  assert.equal(model.canOpenOwner(9, '正常', '直属客户'), true);
+  assert.equal(model.canOpenOwner(9, '正常', '团队客户'), false);
+  assert.equal(model.canOpenOwner(9, '休眠', '直属客户'), false);
+  assert.ok(model.getBenefitUsage(9).some((benefit) => benefit.name === '开通店主权限'));
   for (const marker of [
     'model.canOpenOwner(state.level, state.status, member.kind)',
     'promote-owner-button',
@@ -651,7 +667,6 @@ test('LV11和LV12仅允许将直属客户升级为店主', () => {
   ]) {
     assert.ok(team.includes(marker), `客户升级店主操作缺少：${marker}`);
   }
-  assert.ok(modelSource.includes("memberKind === '直属客户'"), '升级店主资格应只开放给直属客户');
   assert.ok(styles.includes('.person-row-actions'), '缺少成员行右侧操作区样式');
   assert.ok(styles.includes('.promote-owner-button'), '缺少升级为店主按钮样式');
 });
@@ -734,8 +749,16 @@ test('小程序对LV99返回隐藏后的公开等级视图', () => {
     identity: '店主', level: null, levelLabel: '', hidden: true, showStoreArea: true,
   });
   assert.deepEqual(JSON.parse(JSON.stringify(model.getPublicLevelView({ role: 'owner', level: 8 }))), {
-    identity: '星享店主', level: 8, levelLabel: 'LV8', hidden: false, showStoreArea: true,
+    identity: '超级店主', level: 8, levelLabel: 'LV8', hidden: false, showStoreArea: true,
   });
+});
+
+test('小程序等级权益统一使用收益字样且图书权益从LV9起升级', () => {
+  const source = readFileSync(`${root}/model.js`, 'utf8');
+  const levelBenefits = sourceSection(source, 'const levelBenefits = {', 'const levelUpgradeRules = {');
+  assert.equal(levelBenefits.includes('佣金'), false);
+  assert.ok(JSON.stringify(miniModel().getLevelCards(8)[0]).includes('图书50%收益'));
+  assert.ok(JSON.stringify(miniModel().getLevelCards(9)[0]).includes('图书70%两级收益'));
 });
 
 test('LV99在小程序没有自动升级目标且只允许后台人工维护', () => {
