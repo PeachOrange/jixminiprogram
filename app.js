@@ -30,9 +30,9 @@
   };
 
   const conditions = [
-    { name: '店铺客户', current: 18, target: 20, enabled: true },
-    { name: '店铺收益', current: 8800, target: 10000, enabled: true, money: true },
-    { name: '直推店主', current: 9, target: 20, enabled: true, minLevel: 2 },
+    { name: '店铺客户', current: 18 },
+    { name: '店铺收益', current: 8800 },
+    { name: '直推店主', current: 9 },
   ];
 
   const incomeRows = [
@@ -64,7 +64,7 @@
     { name: '吴女士', kind: '直属店主', meta: '成长店主·LV2 · 正常经营', value: '5笔' },
     { name: '林女士', kind: '直属客户', meta: '手机尾号 xxxx', value: '3笔' },
     { name: '陈先生', kind: '直属客户', meta: '手机尾号 xxxx', value: '2笔' },
-    { name: '赵店主', kind: '团队客户', meta: '仅LV11—LV12可见 · 信息已脱敏', value: '8笔' },
+    { name: '赵店主', kind: '团队客户', meta: '仅LV11及以上可见 · 信息已脱敏', value: '8笔' },
   ];
 
   const trainingContent = {
@@ -123,7 +123,16 @@
 
   function progressValue() {
     const rule = model.getUpgradeConditions(state.level);
-    return model.calculateProgress(conditions, rule.relation);
+    return model.calculateProgress(conditionsForLevel(state.level), rule.relation);
+  }
+
+  function conditionsForLevel(level) {
+    const currentValues = new Map(conditions.map((item) => [item.name, item.current]));
+    return model.getUpgradeConditions(level).conditions.map((item) => ({
+      ...item,
+      current: currentValues.get(item.name) || 0,
+      enabled: true,
+    }));
   }
 
   function renderHeader() {
@@ -134,8 +143,8 @@
   function renderProfile(identity) {
     const progress = progressValue();
     const identityCopy = identity.levelLabel ? `${identity.identity}·${identity.levelLabel}` : identity.identity;
-    const growthCopy = identity.hidden ? '当前权益由运营统一维护' : identity.level === 12 ? '合伙人权益已全部生效' : `距 LV${identity.level + 1} 还差 11 位直推店主`;
-    const progressCopy = identity.hidden || identity.level === 12 ? 100 : progress;
+    const growthCopy = identity.hidden ? '当前权益由运营统一维护' : identity.level === 17 ? '最高等级权益已全部生效' : `距 LV${identity.level + 1} 还差 11 位直推店主`;
+    const progressCopy = identity.hidden || identity.level === 17 ? 100 : progress;
     return `<section class="profile-hero">
       <div class="profile-row"><div class="avatar">陈</div><div class="profile-main"><h2>陈先生</h2>
       <p><span class="identity-label">${identityCopy}</span><small>店铺编号 JX-0805168</small></p>
@@ -246,10 +255,10 @@
     const levelSection = `<div class="level-section-head"><div><span class="section-label">等级权益</span><h3>横向滑动查看下一级全部权益</h3></div><div class="level-dots">${cards.map((card, index) => `<button class="${index === 0 ? 'active' : ''}" type="button" data-level-dot="${index}" aria-label="查看LV${card.level}" ${index === 0 ? 'aria-current="true"' : ''}></button>`).join('')}${roadmap.length ? `<button class="locked" type="button" data-level-dot="${cards.length}" aria-label="查看更多等级权益"></button>` : ''}</div></div>
       <section class="level-carousel">${cardMarkup}${moreCard}</section>`;
     const rule = model.getUpgradeConditions(state.level);
-    if (rule.relation === 'offline') return levelSection;
+    if (rule.relation === 'none') return levelSection;
     const progress = progressValue();
     const relationCopy = rule.relation === 'any' ? '满足任一条件即可升级' : '满足全部条件后自动升级';
-    const conditionProgress = conditions.map((item) => {
+    const conditionProgress = conditionsForLevel(state.level).map((item) => {
       const ratio = Math.min(100, Math.round((item.current / item.target) * 100));
       const value = `${item.money ? money(item.current) : item.current} / ${item.money ? money(item.target) : item.target}`;
       return `<div class="condition-row ${ratio === progress ? 'bottleneck' : ''}"><div class="condition-meta"><span>${item.name}</span><b>${value} · ${ratio}%</b></div><div class="progress-track"><i style="width:${ratio}%"></i></div></div>`;
@@ -384,7 +393,7 @@
   }
 
   function renderAdvisor() {
-    return `<section class="advisor-page"><div class="advisor-page-head"><span>专属运营服务</span><h2>陈老师 · 店主运营顾问</h2><p>工作日 09:00—18:00，开店、经营恢复和LV12资格均由运营老师线下承接。</p></div><div class="qr-card"><div class="qr-code" aria-label="运营老师微信码">极X<br>运营</div><div><strong>运营老师微信码</strong><small>扫码添加后，请备注“店铺编号 JX-0805168”</small></div></div><button type="button" data-toast="运营老师微信码已保存">保存微信码</button></section>`;
+    return `<section class="advisor-page"><div class="advisor-page-head"><span>专属运营服务</span><h2>陈老师 · 店主运营顾问</h2><p>工作日 09:00—18:00，开店、经营恢复和等级问题均由运营老师协助处理。</p></div><div class="qr-card"><div class="qr-code" aria-label="运营老师微信码">极X<br>运营</div><div><strong>运营老师微信码</strong><small>扫码添加后，请备注“店铺编号 JX-0805168”</small></div></div><button type="button" data-toast="运营老师微信码已保存">保存微信码</button></section>`;
   }
 
   function renderEmpty(root) {
@@ -399,7 +408,12 @@
       modal.hidden = false;
       return;
     }
-    modal.innerHTML = `<div class="modal-card"><button class="modal-close" type="button" data-close-modal>×</button><span>${feedback.type === 'automatic' ? '升级成功' : '资格达标'}</span><h2>${feedback.identity}·LV${feedback.targetLevel}</h2><p>${feedback.type === 'automatic' ? '新等级与权益已自动生效。' : '已获得超级合伙人资格，请联系专属顾问完成线下审核。'}</p><div class="modal-benefits">${feedback.newBenefits.map((item) => `<b>新增 · ${item}</b>`).join('')}</div><button type="button" data-close-modal>${feedback.type === 'automatic' ? '查看成长权益' : '联系专属顾问'}</button></div>`;
+    if (feedback.type === 'complete') {
+      modal.innerHTML = '<div class="modal-card"><button class="modal-close" type="button" data-close-modal>×</button><span>最高等级</span><h2>超级合伙人权益已全部生效</h2><p>当前已达到小程序公开展示的最高等级。</p><button type="button" data-close-modal>查看成长权益</button></div>';
+      modal.hidden = false;
+      return;
+    }
+    modal.innerHTML = `<div class="modal-card"><button class="modal-close" type="button" data-close-modal>×</button><span>升级成功</span><h2>${feedback.identity}·LV${feedback.targetLevel}</h2><p>新等级与权益已自动生效。</p><div class="modal-benefits">${feedback.newBenefits.map((item) => `<b>新增 · ${item}</b>`).join('')}</div><button type="button" data-close-modal>查看成长权益</button></div>`;
     modal.hidden = false;
   }
 
@@ -421,7 +435,7 @@
         const targetValue = item.money ? money(item.target) : `${item.minLevel ? `≥ LV${item.minLevel} · ` : ''}${item.target}${item.unit}`;
         return `<article><div><strong>${item.name}</strong><small>当前 ${currentValue}</small></div><b>目标 ${targetValue}</b></article>`;
       }).join('')
-      : '<p class="modal-rule-note">达到 LV12 资格后，请联系专属顾问完成线下审核。</p>';
+      : '<p class="modal-rule-note">飞书文档未标注该等级的自动升级条件。</p>';
     modal.innerHTML = `<div class="upgrade-modal detail-modal" role="dialog" aria-modal="true" aria-labelledby="upgrade-conditions-title"><button class="modal-close" type="button" data-close-modal aria-label="关闭">×</button><span class="modal-kicker">升级条件</span><h2 id="upgrade-conditions-title">LV${level} 升级条件</h2><p>${rule.relation === 'all' ? '以下指标需全部满足，结算数据以当前规则版本为准。' : '该等级需要完成线下资格审核。'}</p><div class="modal-condition-list">${conditionRows}</div>${newBenefits.length ? `<div class="modal-new-benefits"><strong>达标后新增权益</strong>${newBenefits.map((item) => `<span>${item.name}</span>`).join('')}</div>` : ''}<button type="button" data-close-modal>我知道了</button></div>`;
     modal.hidden = false;
   }
@@ -643,7 +657,7 @@
   document.querySelectorAll('[data-scenario]').forEach((button) => button.addEventListener('click', () => {
     if (button.dataset.scenario === 'ordinary') { state.role = 'user'; state.level = 1; state.status = '正常'; }
     if (button.dataset.scenario === 'dormant') { state.role = 'owner'; state.level = 6; state.status = '休眠'; }
-    if (button.dataset.scenario === 'partner') { state.role = 'owner'; state.level = 11; state.status = '正常'; }
+    if (button.dataset.scenario === 'partner') { state.role = 'owner'; state.level = 17; state.status = '正常'; }
     roleSelect.value = state.role; levelSelect.value = String(Math.max(2, state.level)); statusSelect.value = state.status; levelSelect.disabled = state.role !== 'owner'; state.page = 'mine'; state.history = []; render();
   }));
   modal.addEventListener('click', (event) => { if (event.target === modal) modal.hidden = true; });

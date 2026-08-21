@@ -1,7 +1,7 @@
 (function (root) {
   const identityNames = [
     { min: 12, name: '超级合伙人' },
-    { min: 9, name: '超级店主' },
+    { min: 7, name: '超级店主' },
     { min: 6, name: '星享店主' },
     { min: 3, name: '轻享店主' },
     { min: 2, name: '成长店主' },
@@ -18,31 +18,41 @@
   };
 
   const levelBenefits = {
-    2: ['基础业务收益', '统一钱包提现', '新店主学习内容'],
-    3: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材'],
-    4: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板'],
-    5: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材'],
-    6: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容'],
-    7: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持'],
-    8: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群'],
-    9: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案'],
-    10: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案', '区域活动支持'],
-    11: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案', '区域活动支持', '二级团队经营汇总'],
-    12: ['基础业务收益', '统一钱包提现', '新店主学习内容', '发圈基础素材', '一级团队经营看板', '开通店主', '手机回收品类', '店铺专属素材', '团队收益', '高阶鉴定内容', '优先结算支持', '专属运营群', '超级店主收益方案', '区域活动支持', '二级团队经营汇总', '合伙人专属方案', '专属顾问支持'],
+    2: ['新人成交奖励', '0基础线上回收培训'],
+    3: ['新人成交奖励', '正品鞋15%收益', '正品服15%收益', '0基础线上回收培训'],
+    4: ['新人成交奖励', '正品鞋15%收益', '正品服15%收益', '普鞋回收15%收益', '旧衣回收50%收益', '0基础线上回收培训'],
+    5: ['新人成交奖励', '正品鞋15%收益', '正品服15%收益', '普鞋回收15%收益', '旧衣回收50%收益', '废旧手机15%收益', '图书50%收益', '0基础线上回收培训'],
+    6: ['新人成交奖励', '正品鞋15%收益', '正品服15%收益', '普鞋回收15%收益', '旧衣回收50%收益', '废旧手机15%收益', '图书50%收益', '0基础线上回收培训', '每月30条视频素材', '进阶店主交流群', '每月5次鉴定'],
+    7: ['新人成交奖励', '正品鞋20%两级收益', '正品服20%两级收益', '普鞋回收15%收益', '旧衣回收50%收益', '废旧手机15%收益', '团队独立收益后台', '图书50%收益', '0基础线上回收培训', '每月30条视频素材', '进阶店主交流群', '深度线上运营培训', '每月5次鉴定'],
+    8: ['新人成交奖励', '正品鞋20%两级收益', '正品服20%两级收益', '普鞋回收20%收益', '旧衣回收60%收益', '废旧手机15%收益', '团队独立收益后台', '图书50%收益', '0基础线上回收培训', '每月30条视频素材', '进阶店主交流群', '深度线上运营培训', '每月5次鉴定'],
+    9: ['新人成交奖励', '正品鞋20%两级收益', '正品服20%两级收益', '普鞋回收20%收益', '旧衣回收60%收益', '废旧手机20%两级收益', '团队独立收益后台', '开通店主权限', '图书70%两级收益', '0基础线上回收培训', '每月60条视频素材', '进阶店主交流群', '深度线上运营培训', '每月5次鉴定'],
+    10: ['新人成交奖励', '正品鞋20%两级收益', '正品服20%两级收益', '普鞋回收20%收益', '旧衣回收60%收益', '废旧手机20%两级收益', '团队独立收益后台', '开通店主权限', '图书70%两级收益', '0基础线上回收培训', '每月60条视频素材', '进阶店主交流群', '深度线上运营培训', '线上招募店主方案', '线下宣传合作方案', '核心店主交流群', '每月5次鉴定'],
+    11: ['新人成交奖励', '正品鞋20%两级收益', '正品服20%两级收益', '普鞋回收20%收益', '旧衣回收60%收益', '废旧手机20%两级收益', '团队独立收益后台', '开通店主权限', '图书70%两级收益', '0基础线上回收培训', '每月60条视频素材', '进阶店主交流群', '深度线上运营培训', '线上招募店主方案', '线下宣传合作方案', '核心店主交流群', '自媒体IP打造', '店主专属客服', '每月5次鉴定'],
+    12: ['新人成交奖励', '正品鞋20%两级收益', '正品服20%两级收益', '普鞋回收20%收益', '旧衣回收60%收益', '废旧手机20%两级收益', '团队独立收益后台', '开通店主权限', '团队数据看板', '图书70%两级收益', '享受团队收益晋升路径', '0基础线上回收培训', '每月60条视频素材', '进阶店主交流群', '深度线上运营培训', '线上招募店主方案', '线下宣传合作方案', '核心店主交流群', '自媒体IP打造', '店主专属客服', '每月10次鉴定'],
+    13: ['新人成交奖励', '正品鞋20%两级收益', '正品服20%两级收益', '普鞋回收20%收益', '旧衣回收60%收益', '废旧手机20%两级收益', '团队独立收益后台', '开通店主权限', '团队数据看板', '团队收益1%', '图书70%两级收益', '享受团队收益晋升路径', '0基础线上回收培训', '每月60条视频素材', '进阶店主交流群', '深度线上运营培训', '线上招募店主方案', '线下宣传合作方案', '核心店主交流群', '自媒体IP打造', '店主专属客服', '每月10次鉴定'],
+    14: ['新人成交奖励', '正品鞋20%两级收益', '正品服20%两级收益', '普鞋回收20%收益', '旧衣回收60%收益', '废旧手机20%两级收益', '团队独立收益后台', '开通店主权限', '团队数据看板', '团队收益2%', '图书70%两级收益', '享受团队收益晋升路径', '0基础线上回收培训', '每月60条视频素材', '进阶店主交流群', '深度线上运营培训', '线上招募店主方案', '线下宣传合作方案', '核心店主交流群', '自媒体IP打造', '店主专属客服', '每月10次鉴定'],
+    15: ['新人成交奖励', '正品鞋20%两级收益', '正品服20%两级收益', '普鞋回收20%收益', '旧衣回收60%收益', '废旧手机20%两级收益', '团队独立收益后台', '开通店主权限', '团队数据看板', '团队收益3%', '图书70%两级收益', '享受团队收益晋升路径', '0基础线上回收培训', '每月60条视频素材', '进阶店主交流群', '深度线上运营培训', '线上招募店主方案', '线下宣传合作方案', '核心店主交流群', '自媒体IP打造', '店主专属客服', '每月10次鉴定'],
+    16: ['新人成交奖励', '正品鞋20%两级收益', '正品服20%两级收益', '普鞋回收20%收益', '旧衣回收60%收益', '废旧手机20%两级收益', '团队独立收益后台', '开通店主权限', '团队数据看板', '团队收益4%', '图书70%两级收益', '享受团队收益晋升路径', '0基础线上回收培训', '每月60条视频素材', '进阶店主交流群', '深度线上运营培训', '线上招募店主方案', '线下宣传合作方案', '核心店主交流群', '自媒体IP打造', '店主专属客服', '每月10次鉴定'],
+    17: ['新人成交奖励', '正品鞋20%两级收益', '正品服20%两级收益', '普鞋回收20%收益', '旧衣回收60%收益', '废旧手机20%两级收益', '团队独立收益后台', '开通店主权限', '团队数据看板', '团队收益5%', '图书70%两级收益', '享受团队收益晋升路径', '0基础线上回收培训', '每月60条视频素材', '进阶店主交流群', '深度线上运营培训', '线上招募店主方案', '线下宣传合作方案', '核心店主交流群', '自媒体IP打造', '店主专属客服', '最高等级店主证书', '每月10次鉴定'],
   };
 
   const levelUpgradeRules = {
-    2: { targets: [3, 0, 0], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
-    3: { targets: [5, 2000, 6], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
-    4: { targets: [12, 5000, 12], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
-    5: { targets: [20, 10000, 20], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
-    6: { targets: [30, 18000, 35], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
-    7: { targets: [40, 28000, 55], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
-    8: { targets: [50, 40000, 80], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
-    9: { targets: [65, 65000, 120], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
-    10: { targets: [90, 100000, 180], directOwnerMinLevel: 2, relation: 'all', upgradeMode: 'automatic' },
-    11: { targets: [120, 160000, 260], directOwnerMinLevel: 3, relation: 'all', upgradeMode: 'automatic' },
-    12: { targets: [0, 0, 0], directOwnerMinLevel: 2, relation: 'offline', upgradeMode: 'contact' },
+    2: { targets: [0, 0, 0], directOwnerMinLevel: 5, relation: 'none', upgradeMode: 'initial' },
+    3: { targets: [10, 0, 0], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    4: { targets: [20, 0, 0], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    5: { targets: [30, 0, 0], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    6: { targets: [50, 0, 0], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    7: { targets: [100, 100, 0], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    8: { targets: [300, 500, 0], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    9: { targets: [500, 2000, 0], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    10: { targets: [800, 3000, 0], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    11: { targets: [1000, 4000, 0], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    12: { targets: [1500, 5000, 10], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    13: { targets: [2000, 6000, 20], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    14: { targets: [2500, 8000, 30], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    15: { targets: [3000, 10000, 50], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    16: { targets: [4000, 12000, 80], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
+    17: { targets: [5000, 15000, 100], directOwnerMinLevel: 5, relation: 'all', upgradeMode: 'automatic' },
   };
 
   const benefitUsageDescriptions = {
@@ -74,7 +84,7 @@
 
   function getIdentityView(state) {
     if (state.role !== 'owner') return { identity: '普通用户', level: 1, showStoreArea: false };
-    const level = Math.max(2, Math.min(12, Number(state.level) || 2));
+    const level = Math.max(2, Math.min(17, Number(state.level) || 2));
     const identity = identityNames.find((item) => level >= item.min)?.name || '成长店主';
     return { identity, level, showStoreArea: true };
   }
@@ -113,8 +123,8 @@
   }
 
   function getLevelCards(currentLevel) {
-    const level = Math.max(2, Math.min(12, Number(currentLevel) || 2));
-    return [level, Math.min(12, level + 1), Math.min(12, level + 2)]
+    const level = Math.max(2, Math.min(17, Number(currentLevel) || 2));
+    return [level, Math.min(17, level + 1), Math.min(17, level + 2)]
       .filter((item, index, values) => values.indexOf(item) === index)
       .map((item) => {
         const previous = levelBenefits[item - 1] || [];
@@ -127,9 +137,9 @@
   }
 
   function getLevelRoadmap(currentLevel) {
-    const level = Math.max(2, Math.min(12, Number(currentLevel) || 2));
+    const level = Math.max(2, Math.min(17, Number(currentLevel) || 2));
     const roadmap = [];
-    for (let targetLevel = level + 3; targetLevel <= 12; targetLevel += 1) {
+    for (let targetLevel = level + 3; targetLevel <= 17; targetLevel += 1) {
       const previous = levelBenefits[targetLevel - 1] || [];
       roadmap.push({
         level: targetLevel,
@@ -141,7 +151,7 @@
   }
 
   function getBenefitUsage(level) {
-    const normalized = Math.max(2, Math.min(12, Number(level) || 2));
+    const normalized = Math.max(2, Math.min(17, Number(level) || 2));
     return (levelBenefits[normalized] || []).map((name) => ({
       name,
       description: benefitUsageDescriptions[name] || '在我的回收店查看该权益的使用入口与生效规则。',
@@ -149,7 +159,7 @@
   }
 
   function getUpgradeConditions(level) {
-    const normalized = Math.max(2, Math.min(12, Number(level) || 2));
+    const normalized = Math.max(2, Math.min(17, Number(level) || 2));
     const rule = levelUpgradeRules[normalized];
     const conditionNames = ['店铺客户', '店铺收益', '直推店主'];
     return {
@@ -199,8 +209,8 @@
   }
 
   function canOpenOwner(level, status, memberKind) {
-    const normalized = Math.max(2, Math.min(12, Number(level) || 2));
-    return (levelBenefits[normalized] || []).includes('开通店主')
+    const normalized = Math.max(2, Math.min(17, Number(level) || 2));
+    return (levelBenefits[normalized] || []).includes('开通店主权限')
       && getStatusImpact(status).canAddOwner
       && memberKind === '直属客户';
   }
@@ -209,13 +219,13 @@
     if (Number(currentLevel) === 99) {
       return { type: 'manual', targetLevel: null, identity: '店主', autoUpgrade: false, newBenefits: [] };
     }
-    const level = Math.max(2, Math.min(12, Number(currentLevel) || 2));
-    const targetLevel = level >= 11 ? 12 : level + 1;
+    const level = Math.max(2, Math.min(17, Number(currentLevel) || 2));
+    if (level === 17) {
+      return { type: 'complete', targetLevel: null, identity: '超级合伙人', autoUpgrade: false, newBenefits: [] };
+    }
+    const targetLevel = level + 1;
     const previous = levelBenefits[targetLevel - 1] || [];
     const newBenefits = (levelBenefits[targetLevel] || []).filter((name) => !previous.includes(name));
-    if (targetLevel === 12) {
-      return { type: 'contact', targetLevel, identity: '超级合伙人', autoUpgrade: false, newBenefits };
-    }
     return {
       type: 'automatic',
       targetLevel,
